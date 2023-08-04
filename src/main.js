@@ -1,12 +1,15 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import {setToken} from './util/auth_util'
 
 import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import 'element-plus/dist/index.css'
 // 引入图标
 import installIcon from './util/icon_util'
+
+setToken('abcd')
 
 import store from './store'
 import { recoverVuex } from './util/recover_vuex'

@@ -12,19 +12,7 @@ export default createStore({
             username: '',
             nickname: '',
         },
-        isLogin: false,
-        isHeadShow: true,
-        isMenuShow: true,
-        //菜单是否折叠
-        isMenuCollapse: false,
-        //选中菜单路径
-        selectPath: '/home',
-        menus: [],
-        tabMenus: [{
-            label: '首页',
-            icon: 'House',
-            path: '/home'
-        }]
+        isLogin: false
     },
     getters: {},
     mutations: {

@@ -1,6 +1,7 @@
 import axios from "axios"
 import { getToken, TOKEN_KEY } from "./auth_util"
 import { warnToast } from "@/util/toast_util.js"
+import qs from "qs"
 import router from '@/router/index.js'
 
 const TokenKey = TOKEN_KEY
@@ -17,13 +18,15 @@ const service = axios.create({
 //请求拦截器
 service.interceptors.request.use(
     config => {
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         //请求头加token
         let token = getToken()
         if (token) {
             config.headers[TokenKey] = token
         }
 
+        if (config.method.toLowerCase() == "post") {
+            config.data = qs.stringify(config.data)
+        }
         return config
     },
     error => {

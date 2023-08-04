@@ -1,6 +1,6 @@
 import { getCacheValueByKey, setCacheValueByKey } from './cache_util.js'
 
-const vuexStateKey = process.env.VUE_APP_VUEX_CACHE_KEY
+const vuexStateKey = process.env.APP_VUEX_CACHE_KEY
 
 // 从cache中恢复Vuex
 export function recoverVuex (state) {

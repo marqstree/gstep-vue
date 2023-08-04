@@ -10,12 +10,12 @@ export default defineConfig({
   base: './',
   define: {
     'process.env': {
-      APP_DOMAIN: 'http://test.wuchuan.com.cn:8800',
-      APP_API_BASE_PATH: '/qywx-server',
+      APP_DOMAIN: 'http://localhost:9900',
+      APP_API_BASE_PATH: '',
       APP_TOKEN_KEY: 'Authorization',
       APP_TOKEN_PREFIX: 'Bearer ',
       APP_NEED_LOGIN_CODE: 401,
-      APP_VUEX_CACHE_KEY: 'ws_qywx_vuex_state'
+      APP_VUEX_CACHE_KEY: 'gstep_vuex_state'
     },
   },
   plugins: [

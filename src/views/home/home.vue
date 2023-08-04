@@ -1,12 +1,19 @@
 <template>
   <div id="mountNode"></div>
+  <el-drawer v-model="isShowDrawer" title="编辑" direction="rtl">
+    <Content @close="onClose" />
+  </el-drawer>
 </template>
 
 <script setup>
 import G6 from '@antv/g6'
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import Content from './widget/content.vue'
+import ApiUtil from '@/api/api'
 
-const data = {
+const isShowDrawer = ref(false)
+
+var chartData = {
   // 点集
   nodes: [
     {
@@ -23,7 +30,7 @@ const data = {
         radius: 4
       },
       anchorPoints: [
-        [0.5, 0.5]
+        [0.5, 0.5], [1, 0.5]
       ]
     },
     {
@@ -57,7 +64,7 @@ const data = {
         radius: 4
       },
       anchorPoints: [
-        [0.5, 0],[0.5,0.5]
+        [0.5, 0], [1, 0.5]
       ]
     },
     {
@@ -74,7 +81,7 @@ const data = {
         radius: 4
       },
       anchorPoints: [
-        [0.5, 0],[0.5,0.5]
+        [0.5, 0], [0.5, 0.5]
       ]
     }
   ],
@@ -142,13 +149,13 @@ const data = {
       target: 'node-approve', // String，必须，目标点 id
       label: '不合格', // 边的文本
       type: 'polyline',
-      controlPoints: [{ x: 200, y: 300 },{ x: 200, y: 200 }],
+      controlPoints: [{ x: 200, y: 300 }, { x: 200, y: 200 }],
       style: {
         endArrow: {
-          path: G6.Arrow.triangle(10, 10, 18),
-          d: -18,
-          fill: '#18c298ad',
-          stroke: '#18c298'
+          path: G6.Arrow.triangle(10, 10, 2),
+          d: 2,
+          fill: '#FCAD22ad',
+          stroke: '#FCAD22ad'
         }
       },
       fill: '#18c298ad',
@@ -157,25 +164,207 @@ const data = {
   ]
 }
 
-onMounted(() => {
-  getView()
+const nodeW = 200
+const nodeH = 150
+let template = {
+  id: 0,
+  groupId: 0,
+  title: ""
+}
+
+onMounted(async () => {
+  if (template.groupId) {
+    await getData()
+  }
+
+  makeChartData()
+  setupChart()
 })
 
-const getView = () => {
+const getData = async () => {
+  const params = {
+    groupId: template.groupId
+  }
+  template = await ApiUtil.template_detail(params)
+}
+
+const makeChartData = () => {
+  chartData = {
+    nodes: [],
+    edges: []
+  }
+
+  if (!template.rootStep || !template.rootStep.id) {
+    template.rootStep = {
+      "id": 1,
+      "title": "申请",
+      "category": "start",
+      "level": 1,
+      "form": {},
+      "nextSteps": []
+    }
+  }
+
+  step2chartData(template.rootStep)
+}
+
+const step2chartData = (step) => {
+  if (!step || !step.id)
+    return
+
+  let startNode = {
+    id: step.id + '', // String，该节点存在则必须，节点的唯一标识
+    x: nodeW, // Number，可选，节点位置的 x 值
+    y: nodeH * (step.level - 1), // Number，可选，节点位置的 y 值
+    // type: 'rect', // 矩形节点
+    label: '申请', // 矩形节点框内的文字
+    description: 'ant_type_name_...',
+    color: '#2196f3',
+    meta: {
+      creatorName: 'a_creator',
+    },
+    type: 'rect-jsx',
+    // 矩形节点框样式
+    style: {
+      fill: '#FFFFFF',
+      stroke: '#4A94FF66',
+      lineWidth: 1,
+      radius: 4
+    },
+    // anchorPoints: [
+    //   [0.5, 0], [0.5, 1]
+    // ]
+  }
+  chartData.nodes.push(startNode)
+
+  let endNode = {
+    id: '9999', // String，该节点存在则必须，节点的唯一标识
+    x: nodeW, // Number，可选，节点位置的 x 值
+    y: nodeH, // Number，可选，节点位置的 y 值
+    // type: 'rect', // 矩形节点
+    label: '结束', // 矩形节点框内的文字
+    description: 'ant_type_name_...',
+    color: '#2196f3',
+    meta: {
+      creatorName: 'a_creator',
+    },
+    type: 'rect-jsx',
+    // 矩形节点框样式
+    style: {
+      fill: '#FFFFFF',
+      stroke: '#4A94FF66',
+      lineWidth: 1,
+      radius: 4
+    },
+    // anchorPoints: [
+    //   [0.5, 0], [0.5, 1]
+    // ]
+  }
+  chartData.nodes.push(endNode)
+
+  let edge = {
+    source: startNode.id, // String，必须，起始点 id
+    target: endNode.id, // String，必须，目标点 id
+    label: '', // 边的文本
+    style: {
+      // endArrow: true,
+      // startArrow: false,
+      // 箭头样式
+      endArrow: {
+        lineDash: false,
+        path: G6.Arrow.triangle(10, 10, 2), // 使用内置箭头路径函数，参数为箭头的 宽度、长度、偏移量（默认为 0，与 d 对应）
+        d: 2,
+        fill: '#999999ff',
+        stroke: '#999999ff'
+      },
+      fill: '#99999966',
+      stroke: '#99999966'
+    }
+  }
+  chartData.edges.push(edge)
+
+  if (!step.nextSteps || step.nextSteps.length < 1)
+    return
+
+  step.nextSteps.forEach(item => {
+    step2chartData(item)
+  })
+}
+
+const setupChart = () => {
   const container = document.getElementById('mountNode')
 
   const width = container.scrollWidth
   const height = container.scrollHeight
+
+
+  G6.registerNode(
+    'rect-jsx',
+    (cfg) => `
+    <group>
+      <rect>
+        <rect style={{
+          width: 150,
+          height: 20,
+          fill: ${cfg.color},
+          radius: [6, 6, 0, 0],
+          cursor: 'move'，
+          stroke: ${cfg.color}
+        }} draggable="true">
+          <text style={{
+            marginTop: 2,
+            marginLeft: 75,
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fill: '#fff' }}>{{label}}</text>
+        </rect>
+        <rect style={{
+          width: 150,
+          height: 55,
+          stroke: ${cfg.color},
+          fill: #ffffff,
+          radius: [0, 0, 6, 6],
+        }}>
+          <text style={{ marginTop: 5, marginLeft: 3, fill: '#333', marginLeft: 4 }}>责任人: {{description}}</text>
+        </rect>
+      </rect>
+      <circle style={{
+        stroke: ${cfg.color},
+        r: 10,
+        fill: '#fff',
+        marginLeft: 75,
+        cursor: 'pointer'
+      }} name="circle">
+        <image style={{ img: 'https://www.bqdnao.com/faceroop-static/add.png', width: 12, height: 12,  marginLeft: 69,  marginTop: -5 }} />
+      </circle>
+    </group>`,
+  );
+
   // const width = window.
   const graph = new G6.Graph({
     modes: {
-      default: ['drag-canvas', 'zoom-canvas'] // 允许拖拽画布、放缩画布、拖拽节点
+      default: ['drag-canvas', 'zoom-canvas'], // 允许拖拽画布、放缩画布、拖拽节点
+      nodeActive: ['hover', 'clickSelect']
     },
     container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
     fitView: true, // 是否将图适配到画布大小，可以防止超出画布或留白太多。
     width: width, // Number，必须，图的宽度
     height: height, // Number，必须，图的高度
-    size: [100, 1000]
+    size: [100, 1000],
+    //////////////////////////////////////////////////////////////////////////
+    // 交互状态 State
+    //////////////////////////////////////////////////////////////////////////
+    // 节点不同状态下的样式集合
+    nodeStateStyles: {
+      // 鼠标 hover 上节点，即 hover 状态为 true 时的样式
+      hover: {
+        stroke: "#4A94FFff",
+      },
+      // 鼠标点击节点，即 click 状态为 true 时的样式
+      click: {
+        fill: "#eeeeeeFF",
+      },
+    }
   })
   G6.registerNode('diamond', {
     options: {
@@ -232,81 +421,57 @@ const getView = () => {
     // 当不指定该参数则代表不继承任何内置节点类型
     'single-node', // 基于 single-node 为例进行扩展
   )
-  // 动态设置节点样式
-  // graph.node((node) => {
-  //   console.log(node)
-  //   return {
-  //     id: node.id,
-  //     type: 'rect',
-  //     style: {
-  //       fill: 'blue'
-  //     }
-  //   }
-  // })
-  graph.data(data) // 读取 Step 2 中的数据源到图上
-  // 给节点下方展示额外的文字
-  graph.on('afterrender', () => {
-    graph.getNodes().forEach(node => {
-      const { extraText, text1 } = node.getModel()
-      const bbox = node.getBBox()
-      const centerX = bbox.minX + bbox.width / 2
-      const centerY = bbox.minY + bbox.height / 2
-      const textGroup = graph.get('group').addGroup()
-      const texta = textGroup.addShape('text', {
-        attrs: {
-          text: text1,
-          x: centerX,
-          y: centerY + 45,
-          textAlign: 'center',
-          textBaseline: 'middle',
-          type: 'rect',
-          fill: '#000',
-          cursor: 'pointer',
-          fontSize: 12
-        }
-      })
-      textGroup.addShape('text', {
-        attrs: {
-          text: extraText,
-          x: centerX,
-          y: centerY + 25,
-          textAlign: 'center',
-          textBaseline: 'middle',
-          fill: '#000',
-          fontSize: 12
-        }
-      })
-      // 添加边框
-      const bbox1 = texta.getBBox()
-      if (bbox1.height !== 0) {
-        textGroup.addShape('rect', {
-          attrs: {
-            x: bbox1.x - 4,
-            y: bbox1.y - 4,
-            width: bbox1.width + 10,
-            height: bbox1.height + 8,
-            stroke: '#000',
-            lineWidth: 2,
-            cursor: 'pointer',
-            radius: 7
-          }
-        })
-      }
-      // 指定文字的点击事件
-      texta.on('click', () => {
-        // 处理点击事件的逻辑
-        console.log('Label clicked!')
-      })
-    })
+
+  //////////////////////////////////////////////////////////////////////////
+  // 监听事件并切换元素状态
+  //////////////////////////////////////////////////////////////////////////
+  // 鼠标进入节点
+  graph.on("node:mouseenter", (e) => {
+    const nodeItem = e.item; // 获取鼠标进入的节点元素对象
+    graph.setItemState(nodeItem, "hover", true); // 设置当前节点的 hover 状态为 true
   })
+
+  // 鼠标离开节点
+  graph.on("node:mouseleave", (e) => {
+    const nodeItem = e.item; // 获取鼠标离开的节点元素对象
+    graph.setItemState(nodeItem, "hover", false); // 设置当前节点的 hover 状态为 false
+  })
+
+  // 点击节点
+  graph.on("node:click", (e) => {
+    // 先将所有当前是 click 状态的节点置为非 click 状态
+    const clickNodes = graph.findAllByState("node", "click");
+    console.log("Bowen: mounted -> clickNodes", clickNodes)
+    clickNodes.forEach((cn) => {
+      graph.setItemState(cn, "click", false);
+    });
+    const nodeItem = e.item; // 获取被点击的节点元素对象
+    graph.setItemState(nodeItem, "click", true); // 设置当前节点的 click 状态为 true
+
+    selectTask(nodeItem)
+  })
+
+  graph.data(chartData) // 读取 Step 2 中的数据源到图上
+
   graph.render() // 渲染图
+
+}
+
+const onClose = () => {
+  isShowDrawer.value = false
+}
+
+const selectTask = (item) => {
+  console.log(item)
+
+  isShowDrawer.value = true
 }
 </script>
 
-<style>
+<style scoped>
 #mountNode {
   width: 100%;
-  height: 500px;
+  height: 100vh;
 }
 </style>
 
