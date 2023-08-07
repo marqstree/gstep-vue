@@ -6,7 +6,7 @@
 import G6 from '@antv/g6'
 import { onMounted, ref, defineEmits } from 'vue'
 import VM from '../vm/vm'
-import {strWidth} from '@/util/str_util'
+import { strWidth } from '@/util/str_util'
 
 const emit = defineEmits(['update:isShowDrawer'])
 
@@ -34,7 +34,7 @@ const setupChart = () => {
     const width = container.scrollWidth
     const height = container.scrollHeight
 
-    // 自定义开始节点
+    // 开始节点
     G6.registerNode(
         'start',
         {
@@ -43,8 +43,8 @@ const setupChart = () => {
                 const r = 2;
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: 0,
-                        y: 0,
+                        x: -VM.nodeW / 2,
+                        y: -VM.nodeH/2,
                         width: VM.nodeW,
                         height: VM.nodeH,
                         stroke: VM.BG_PRIMARY_COLOR,
@@ -56,8 +56,8 @@ const setupChart = () => {
 
                 group.addShape('rect', {
                     attrs: {
-                        x: 0,
-                        y: 0,
+                        x: -VM.nodeW / 2,
+                        y: -VM.nodeH/2,
                         width: VM.nodeW,
                         height: 20,
                         fill: color,
@@ -71,12 +71,14 @@ const setupChart = () => {
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        textBaseline: 'top',
-                        y: 5,
-                        x: 24,
-                        lineHeight: 20,
+                        y: -VM.nodeH/2+10,
+                        x: 0,
                         text: cfg.detail.title,
                         fill: '#fff',
+                        fontSize: 14,
+                        textAlign: 'center',
+                        textBaseline: 'middle',
+                        fontWeight: 'bold',
                         cursor: 'pointer',
                     },
                     // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
@@ -86,12 +88,13 @@ const setupChart = () => {
                 // detail text
                 group.addShape('text', {
                     attrs: {
-                        textBaseline: 'bottom',
-                        y: 42,
-                        x: 24,
-                        lineHeight: 20,
+                        y: -VM.nodeH/2+35,
+                        x: 0,
                         text: cfg.detail.candidatesText,
                         fill: '#000',
+                        fontSize: 12,
+                        textAlign: 'center',
+                        textBaseline: 'middle'
                     },
                     // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'title',
@@ -103,7 +106,7 @@ const setupChart = () => {
         'single-node',
     )
 
-    // 自定义加号节点
+    // 加号节点
     G6.registerNode(
         'add-child',
         {
@@ -138,8 +141,8 @@ const setupChart = () => {
                 const r = 2;
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: 0,
-                        y: 0,
+                        x: -VM.nodeW/2,
+                        y: -VM.conditionH/2,
                         width: VM.nodeW,
                         height: VM.conditionH,
                         stroke: '#666',
@@ -148,17 +151,17 @@ const setupChart = () => {
                     name: 'main-box'
                 })
 
-
-                console.log("XXXXXXXXXXXXXXXXXXXXXXXXXX")
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        textBaseline: 'top',
-                        y: 10,
-                        x: (VM.nodeW-50)/2,
-                        lineHeight: 20,
-                        text: '添加条件',
+                        x: 0,
+                        y: 0,
+                        text: "添加条件",
                         fill: '#000',
+                        fontSize: 14,
+                        textAlign: 'center',
+                        textBaseline: 'middle',
+                        cursor: 'pointer'
                     },
                     name: 'title',
                 })
@@ -169,7 +172,7 @@ const setupChart = () => {
         'single-node',
     )
 
-    // 自定义结束节点
+    // 结束节点
     G6.registerNode(
         'end',
         {
@@ -178,8 +181,8 @@ const setupChart = () => {
                 const r = 2;
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: 0,
-                        y: 0,
+                        x: -VM.nodeW/2,
+                        y: -VM.endH/2,
                         width: VM.nodeW,
                         height: VM.endH,
                         stroke: VM.BG_END_COLOR,
@@ -192,12 +195,13 @@ const setupChart = () => {
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        textBaseline: 'top',
-                        y: 10,
-                        x: 48,
-                        lineHeight: 20,
-                        text: '结束',
+                        x: 0,
+                        y: 0,
+                        text: "结束",
                         fill: '#fff',
+                        fontSize: 14,
+                        textAlign: 'center',
+                        textBaseline: 'middle'
                     },
                     name: 'title',
                 })
@@ -217,8 +221,8 @@ const setupChart = () => {
                 const r = 2;
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: 0,
-                        y: 0,
+                        x: -VM.nodeW/2,
+                        y: -VM.nodeH/2,
                         width: VM.nodeW,
                         height: VM.nodeH,
                         stroke: VM.BG_PRIMARY_COLOR,
@@ -229,8 +233,8 @@ const setupChart = () => {
 
                 group.addShape('rect', {
                     attrs: {
-                        x: 0,
-                        y: 0,
+                        x: -VM.nodeW/2,
+                        y: -VM.nodeH/2,
                         width: VM.nodeW,
                         height: 20,
                         fill: color,
@@ -243,29 +247,30 @@ const setupChart = () => {
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        textBaseline: 'top',
-                        y: 5,
-                        x: 24,
-                        lineHeight: 20,
+                        textBaseline: 'middle',
+                        textAlign:'center',
+                        y: -VM.nodeH/2+10,
+                        x: 0,
                         text: cfg.detail.title,
                         fill: '#fff',
+                        fontSize: 14,
+                        fontWeight: 'bold',
                         cursor: 'pointer',
                     },
-                    // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'title',
                 })
 
                 // detail text
                 group.addShape('text', {
                     attrs: {
-                        textBaseline: 'bottom',
-                        y: 42,
-                        x: 24,
-                        lineHeight: 20,
+                        textBaseline: 'middle',
+                        textAlign:'center',
+                        y: -VM.nodeH/2+20,
+                        x: 0,
                         text: cfg.detail.expression,
                         fill: '#000',
+                        fontSize: 12
                     },
-                    // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'title',
                 })
 
@@ -401,6 +406,12 @@ const setupChart = () => {
         fitView: true, // 是否将图适配到画布大小，可以防止超出画布或留白太多。
         width: width, // Number，必须，图的宽度
         height: height, // Number，必须，图的高度
+        layout: {
+            type: 'dagre',
+            sortByCombo: false,
+            ranksep: 10,
+            nodesep: 50,
+        },
         fitCenter: true,
         size: [100, 1000],
     })

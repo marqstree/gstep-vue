@@ -237,8 +237,8 @@ export default class VM {
         if (step.category == 'start') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                x: -VM.nodeW/2, // Number，可选，节点位置的 x 值
-                y: y, // Number，可选，节点位置的 y 值
+                // x: 0, // Number，可选，节点位置的 x 值
+                // y: 0, // Number，可选，节点位置的 y 值
                 // type: 'rect', // 矩形节点
                 detail: step,
                 type: 'start',
@@ -250,8 +250,8 @@ export default class VM {
         else if (step.category == 'end') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                x: -VM.nodeW/2, // Number，可选，节点位置的 x 值
-                y: y, // Number，可选，节点位置的 y 值
+                // x: 0, // Number，可选，节点位置的 x 值
+                // y: 0, // Number，可选，节点位置的 y 值
                 type: 'end',
                 detail: step,
                 anchorPoints: [
@@ -261,8 +261,8 @@ export default class VM {
         } else if (step.category == 'condition') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                x: -(VM.getSiblingCount(step)*VM.nodeW / 2) + (VM.getSiblingIndex(step)*VM.nodeW) , // Number，可选，节点位置的 x 值
-                y: y, // Number，可选，节点位置的 y 值
+                // x: 0 , // Number，可选，节点位置的 x 值
+                // y: 0, // Number，可选，节点位置的 y 值
                 type: 'condition',
                 detail: step,
                 anchorPoints: [
@@ -306,8 +306,8 @@ export default class VM {
             addx=stepNode.x+VM.nodeW/2
         let addStepNode = {
             id: step.id + '_add_step', // String，该节点存在则必须，节点的唯一标识
-            x: addx, // Number，可选，节点位置的 x 值
-            y: y + VM.nodeH + VM.spaceH, // Number，可选，节点位置的 y 值
+            // x: 0, // Number，可选，节点位置的 x 值
+            // y: 0, // Number，可选，节点位置的 y 值
             step: step,
             type: 'add-child',
             anchorPoints: [
@@ -331,8 +331,8 @@ export default class VM {
         if (step.branchSteps.length > 0) {
             let addConditionNode = {
                 id: step.id + '_add_condition', // String，该节点存在则必须，节点的唯一标识
-                x: -VM.nodeW/2, // Number，可选，节点位置的 x 值
-                y: addStepNode.y + VM.addStepH + VM.spaceH, // Number，可选，节点位置的 y 值
+                x: 0, // Number，可选，节点位置的 x 值
+                y: 0, // Number，可选，节点位置的 y 值
                 step: step,
                 type: 'add-condition',
                 anchorPoints: [
@@ -369,7 +369,7 @@ export default class VM {
                 let addReduceNode = {
                     id: step.id + '_add_reduce', // String，该节点存在则必须，节点的唯一标识
                     x: 0, // Number，可选，节点位置的 x 值
-                    y: maxBranchY + VM.addStepH, // Number，可选，节点位置的 y 值
+                    y: 0, // Number，可选，节点位置的 y 值
                     step: step,
                     type: 'add-child',
                     anchorPoints: [
