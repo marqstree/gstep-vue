@@ -17,6 +17,12 @@ export function fittingString(str, maxWidth, fontSize) {
   return str
 }
 
+export function strWidth(str, fontSize){
+  var fontWidth = fontSize * 1.3; //字号+边距
+  var width = calcStrLen(str) * fontWidth;
+  return width
+}
+
 /**
  * 计算字符串的长度
  * @param {string} str 指定的字符串
