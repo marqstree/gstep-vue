@@ -6,7 +6,8 @@
 import G6 from '@antv/g6'
 import { onMounted, ref, defineEmits } from 'vue'
 import VM from '../vm/vm'
-import { strWidth } from '@/util/str_util'
+import { deleteConfirm } from '@/util/message_util'
+
 
 const emit = defineEmits(['update:isShowDrawer'])
 
@@ -16,7 +17,11 @@ onMounted(async () => {
     if (VM.template.groupId)
         await VM.getData()
     else
-        VM.newChartData()
+        VM.newTemplate()
+
+    VM.step2chartData(VM.template.rootStep, null)
+    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+    console.log(VM.chartData)
     setupChart()
 })
 
@@ -31,8 +36,8 @@ const refreshChart = () => {
 const setupChart = () => {
     const container = document.getElementById('mountNode')
 
-    const width = container.scrollWidth
-    const height = container.scrollHeight
+    const scrollWidth = container.scrollWidth
+    const scrollHeight = container.scrollHeight
 
     // 开始节点
     G6.registerNode(
@@ -44,36 +49,34 @@ const setupChart = () => {
                 const shape = group.addShape('rect', {
                     attrs: {
                         x: -VM.nodeW / 2,
-                        y: -VM.nodeH/2,
+                        y: -VM.nodeH / 2,
                         width: VM.nodeW,
                         height: VM.nodeH,
                         stroke: VM.BG_PRIMARY_COLOR,
                         radius: r,
                     },
-                    // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'main-box'
                 })
 
                 group.addShape('rect', {
                     attrs: {
                         x: -VM.nodeW / 2,
-                        y: -VM.nodeH/2,
+                        y: -VM.nodeH / 2,
                         width: VM.nodeW,
                         height: 20,
                         fill: color,
                         radius: [r, r, 0, 0],
                         cursor: 'pointer',
                     },
-                    // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'title-box'
                 })
 
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        y: -VM.nodeH/2+10,
+                        y: -VM.nodeH / 2 + 10,
                         x: 0,
-                        text: cfg.detail.title,
+                        text: cfg.step.title,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -81,27 +84,30 @@ const setupChart = () => {
                         fontWeight: 'bold',
                         cursor: 'pointer',
                     },
-                    // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'title',
                 })
 
                 // detail text
                 group.addShape('text', {
                     attrs: {
-                        y: -VM.nodeH/2+35,
+                        y: -VM.nodeH / 2 + 35,
                         x: 0,
-                        text: cfg.detail.candidatesText,
+                        text: cfg.step.candidatesText,
                         fill: '#000',
                         fontSize: 12,
                         textAlign: 'center',
                         textBaseline: 'middle'
                     },
-                    // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
                     name: 'title',
                 })
 
                 return shape
             },
+            getAnchorPoints() {
+                return [
+                    [0.5, 1]
+                ]
+            }
         },
         'single-node',
     )
@@ -128,21 +134,26 @@ const setupChart = () => {
 
                 return shape
             },
+            getAnchorPoints() {
+                return [
+                    [0.5, 0], [0.5, 1]
+                ]
+            }
         },
         'single-node',
     )
 
     // 添加条件节点
     G6.registerNode(
-        'add-condition',
+        'branch',
         {
             drawShape: function drawShape(cfg, group) {
                 const color = VM.BG_PRIMARY_COLOR;
                 const r = 2;
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: -VM.nodeW/2,
-                        y: -VM.conditionH/2,
+                        x: -VM.nodeW / 2,
+                        y: -VM.conditionH / 2,
                         width: VM.nodeW,
                         height: VM.conditionH,
                         stroke: '#666',
@@ -168,6 +179,11 @@ const setupChart = () => {
 
                 return shape
             },
+            getAnchorPoints() {
+                return [
+                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                ]
+            }
         },
         'single-node',
     )
@@ -181,8 +197,8 @@ const setupChart = () => {
                 const r = 2;
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: -VM.nodeW/2,
-                        y: -VM.endH/2,
+                        x: -VM.nodeW / 2,
+                        y: -VM.endH / 2,
                         width: VM.nodeW,
                         height: VM.endH,
                         stroke: VM.BG_END_COLOR,
@@ -208,6 +224,11 @@ const setupChart = () => {
 
                 return shape
             },
+            getAnchorPoints() {
+                return [
+                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                ]
+            }
         },
         'single-node',
     )
@@ -217,15 +238,15 @@ const setupChart = () => {
         'condition',
         {
             drawShape: function drawShape(cfg, group) {
-                const color = VM.BG_PRIMARY_COLOR;
                 const r = 2;
+                let color = "#AAE4DB"
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: -VM.nodeW/2,
-                        y: -VM.nodeH/2,
+                        x: -VM.nodeW / 2,
+                        y: -VM.nodeH / 2,
                         width: VM.nodeW,
                         height: VM.nodeH,
-                        stroke: VM.BG_PRIMARY_COLOR,
+                        stroke: color,
                         radius: r,
                     },
                     name: 'main-box'
@@ -233,8 +254,8 @@ const setupChart = () => {
 
                 group.addShape('rect', {
                     attrs: {
-                        x: -VM.nodeW/2,
-                        y: -VM.nodeH/2,
+                        x: -VM.nodeW / 2,
+                        y: -VM.nodeH / 2,
                         width: VM.nodeW,
                         height: 20,
                         fill: color,
@@ -248,26 +269,42 @@ const setupChart = () => {
                 group.addShape('text', {
                     attrs: {
                         textBaseline: 'middle',
-                        textAlign:'center',
-                        y: -VM.nodeH/2+10,
+                        textAlign: 'center',
+                        y: -VM.nodeH / 2 + 10,
                         x: 0,
-                        text: cfg.detail.title,
+                        text: cfg.step.title,
                         fill: '#fff',
                         fontSize: 14,
                         fontWeight: 'bold',
-                        cursor: 'pointer',
+
                     },
                     name: 'title',
                 })
+
+                console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                if (cfg.step.title != '默认条件') {
+                    group.addShape('image', {
+                        attrs: {
+                            x: 40,
+                            y: -VM.nodeH / 2,
+                            width: 18,
+                            height: 18,
+                            img: 'https://www.bqdnao.com/faceroop-static/close.png',
+                            cursor: 'pointer',
+                        },
+                        // 在 G6 3.3 及之后的版本中，必须指定 name，可以是任意字符串，但需要在同一个自定义元素类型中保持唯一性
+                        name: 'delete-condition-image',
+                    })
+                }
 
                 // detail text
                 group.addShape('text', {
                     attrs: {
                         textBaseline: 'middle',
-                        textAlign:'center',
-                        y: -VM.nodeH/2+20,
+                        textAlign: 'center',
+                        y: -VM.nodeH / 2 + 20,
                         x: 0,
-                        text: cfg.detail.expression,
+                        text: cfg.step.expression,
                         fill: '#000',
                         fontSize: 12
                     },
@@ -276,6 +313,11 @@ const setupChart = () => {
 
                 return shape
             },
+            getAnchorPoints() {
+                return [
+                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                ]
+            }
         },
         'single-node',
     )
@@ -320,7 +362,7 @@ const setupChart = () => {
                         y: 5,
                         x: 24,
                         lineHeight: 20,
-                        text: cfg.detail.title,
+                        text: cfg.step.title,
                         fill: '#fff',
                         cursor: 'pointer',
                     },
@@ -335,7 +377,7 @@ const setupChart = () => {
                         y: 42,
                         x: 24,
                         lineHeight: 20,
-                        text: cfg.detail.candidatesText,
+                        text: cfg.step.candidatesText,
                         fill: '#000',
                     },
                     // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
@@ -344,6 +386,11 @@ const setupChart = () => {
 
                 return shape
             },
+            getAnchorPoints() {
+                return [
+                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                ]
+            }
         },
         'single-node',
     )
@@ -383,7 +430,7 @@ const setupChart = () => {
             if (target.dataset.tag == 'menu-condition') {
                 console.log('+++ click menu-condition +++++++++++++++++++')
 
-                VM.NewConditionStep(step)
+                VM.NewBranchStep(step)
                 refreshChart()
             } else if (target.dataset.tag == 'menu-audit') {
                 console.log('+++ click menu-audit +++++++++++++++++++')
@@ -404,16 +451,16 @@ const setupChart = () => {
         container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
         plugins: [menu], // 配置 Menu 插件
         fitView: true, // 是否将图适配到画布大小，可以防止超出画布或留白太多。
-        width: width, // Number，必须，图的宽度
-        height: height, // Number，必须，图的高度
+        width: scrollWidth, // Number，必须，图的宽度
+        height: scrollHeight, // Number，必须，图的高度
         layout: {
             type: 'dagre',
-            sortByCombo: false,
+            rankdir: 'TB',
             ranksep: 10,
-            nodesep: 50,
+            nodesep: 40,
+            controlPoints: true
         },
-        fitCenter: true,
-        size: [100, 1000],
+        fitCenter: true
     })
 
     //////////////////////////////////////////////////////////////////////////
@@ -423,9 +470,26 @@ const setupChart = () => {
     graph.on('node:click', (e) => {
         const { item } = e
         console.log("+++++++++ node:click ++++++++++++++++")
-        if (item._cfg.currentShape == 'start') {
+        if (item._cfg.currentShape == 'start'
+            || item._cfg.currentShape == 'audit'
+            || item._cfg.currentShape == 'notify') {
             emit('update:isShowDrawer', true)
+        } else if (item._cfg.currentShape == 'branch') {
+            let step = item._cfg.model.step
+            VM.AddConditionStep(step)
+            refreshChart()
         }
+    })
+
+    //条件节点:删除按钮
+    graph.on('delete-condition-image:click', (e) => {
+        const { item } = e
+        console.log("+++++++++ delete-condition-image:click ++++++++++++++++")
+        let step = item._cfg.model.step
+        deleteConfirm().then(() => {
+            VM.deleteChildStepById(step.id, VM.template.rootStep)
+            refreshChart()
+        })
     })
 
     // 加载流程图数据

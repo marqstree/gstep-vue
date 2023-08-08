@@ -2,7 +2,6 @@ import G6 from '@antv/g6'
 import { fittingString } from '@/util/str_util'
 
 export default class VM {
-
     static nodeW = 120
     static nodeH = 50
     static spaceH = 30
@@ -18,12 +17,23 @@ export default class VM {
     static BG_HOVER_COLOR = "#2196f3aa"
     static FONT_PRIMARY_COLOR = "#333333"
     static FONT_HOVER_COLOR = "#999999"
+    static END_STEP_ID = 9999
 
     static chartData = {}
     static template = {
         id: 0,
         groupId: 0,
         title: ""
+    }
+
+    static END_STEP = {
+        "id": VM.END_STEP_ID,
+        "title": "结束",
+        "category": "end",
+        "level": 2,
+        "form": {},
+        "branchSteps": [],
+        "nextStep": {}
     }
 
     // 查询入库流程图数据
@@ -34,14 +44,51 @@ export default class VM {
         template = await ApiUtil.template_detail(params)
     }
 
-    static NewConditionStep(parentStep) {
-        let title = ''
-        if (parentStep.branchSteps.length == 0)
-            title = '条件1'
-        else
-            title = '条件' + parentStep.branchSteps.length
+    // 添加分支步骤
+    static NewBranchStep(parentStep) {
+        let oldNextStep = VM.copyNextStepWithoutEndStep(parentStep)
 
-        let newStep = {
+        let branchStep = {
+            "id": VM.newStepId(),
+            "title": "",
+            "category": "branch",
+            "level": parentStep.level + 1,
+            "form": {},
+            "branchSteps": [],
+            "nextStep": VM.END_STEP
+        }
+        parentStep.nextStep = branchStep
+
+        let firstConditionStep = {
+            "id": branchStep.id+1,
+            "title": "条件1",
+            "category": "condition",
+            "level": parentStep.level + 1,
+            "form": {},
+            "branchSteps": [],
+            "nextStep": {}
+        }
+        branchStep.branchSteps = []
+        branchStep.branchSteps.push(firstConditionStep)
+
+        let defaultConditionStep = {
+            "id": branchStep.id+2,
+            "title": '默认条件',
+            "category": "condition",
+            "level": parentStep.level + 1,
+            "form": {},
+            "branchSteps": [],
+            "nextStep": oldNextStep
+        }
+        branchStep.branchSteps.push(defaultConditionStep)
+        VM.refreshChartData()
+    }
+
+    // 添加条件步骤
+    static AddConditionStep(parentStep) {
+        let title = '条件' + parentStep.branchSteps.length
+
+        let conditionStep = {
             "id": VM.newStepId(),
             "title": title,
             "category": "condition",
@@ -50,24 +97,72 @@ export default class VM {
             "branchSteps": [],
             "nextStep": {}
         }
-        parentStep.branchSteps.push(newStep)
-
-        if (parentStep.branchSteps.length == 1) {
-            let defaultStep = {
-                "id": VM.newStepId(),
-                "title": '默认条件',
-                "category": "condition",
-                "level": parentStep.level + 1,
-                "form": {},
-                "branchSteps": [],
-                "nextStep": {}
-            }
-            parentStep.branchSteps.push(defaultStep)
-        }
+        parentStep.branchSteps.splice(parentStep.branchSteps.length-1,0,conditionStep)
+        console.log('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+        console.log(VM.template.rootStep)
 
         VM.refreshChartData()
     }
 
+    // static deleteStep(step) {
+    //     if (step.category == 'condition') {
+    //         let parentStep = VM.findParentStep(step)
+    //         let list = parentStep.branchSteps.filter(e => e.id != step.id)
+    //         if (list.length == 1)
+    //             list = []
+
+    //         parentStep.branchSteps = list
+
+    //         copyNextStepWithoutEndStep
+    //     }
+    // }
+
+    static deleteChildStepById(stepId, startStep) {
+        if (null == startStep)
+            return
+
+        //删除
+        if (startStep.nextStep.id == stepId) {
+            startStep.nextStep = startStep.nextStep.nextStep
+        }
+
+        //若为条件节点,删除条件节点及其子节点
+        let findIndex=-1
+        for (var i = 0; i < startStep.branchSteps.length; i++) {
+            if (startStep.branchSteps[i].id == stepId){
+                findIndex = i
+                break
+            }
+        }
+        if(findIndex>=0)
+            startStep.branchSteps.splice(findIndex, 1)
+
+        //只剩一个默认条件节点时,删除默认条件节点
+        if (startStep.category=='branch' && startStep.branchSteps.length <= 1){
+            let parentStep = VM.findParentStep(startStep)
+            startStep.branchSteps = []
+            parentStep.nextStep = startStep.nextStep
+        }
+
+        if (startStep.nextStep.id)
+            VM.deleteChildStepById(stepId, startStep.nextStep)
+
+        for (var i = 0; i < startStep.branchSteps.length; i++) {
+            VM.deleteChildStepById(stepId, startStep.branchSteps[i])
+        }
+    }
+
+    static copyNextStepWithoutEndStep(step) {
+        let oldNextStep = JSON.parse(JSON.stringify(step.nextStep))
+        if(VM.END_STEP_ID == oldNextStep.id){
+            return {}
+        }
+
+        VM.deleteChildStepById(VM.END_STEP_ID, oldNextStep)
+        return oldNextStep
+    }
+
+    //刷新图表节点,连线列表
     static refreshChartData() {
         VM.chartData = {
             nodes: [],
@@ -75,12 +170,11 @@ export default class VM {
         }
         VM.formatStep(VM.template.rootStep)
         VM.step2chartData(VM.template.rootStep, null)
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>")
         console.log(VM.chartData)
     }
 
-    // 创建新流程图数据
-    static newChartData() {
+    // 创建新流程模板
+    static newTemplate() {
         if (!VM.template.rootStep || !VM.template.rootStep.id) {
             VM.template.rootStep = {
                 "id": 1,
@@ -96,15 +190,7 @@ export default class VM {
                     "name": "王凡"
                 }],
                 "branchSteps": [],
-                "nextStep": {
-                    "id": 9999,
-                    "title": "结束",
-                    "category": "end",
-                    "level": 2,
-                    "form": {},
-                    "branchSteps": [],
-                    "nextStep": {}
-                }
+                "nextStep": VM.END_STEP
             }
         }
 
@@ -113,99 +199,6 @@ export default class VM {
             nodes: [],
             edges: []
         }
-        VM.step2chartData(VM.template.rootStep, null)
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        console.log(VM.chartData)
-        // VM.chartData = {
-        //     "nodes": [
-        //         {
-        //             "id": "1",
-        //             "x": 0,
-        //             "y": 0,
-        //             "detail": {
-        //                 "id": 1,
-        //                 "title": "申请",
-        //                 "category": "start",
-        //                 "level": 1,
-        //                 "form": {},
-        //                 "candidates": [
-        //                     {
-        //                         "id": "013645",
-        //                         "name": "王凡"
-        //                     },
-        //                     {
-        //                         "id": "013645",
-        //                         "name": "王凡"
-        //                     }
-        //                 ],
-        //                 "branchSteps": [],
-        //                 "nextStep": {
-        //                     "id": 9999,
-        //                     "title": "结束",
-        //                     "category": "end",
-        //                     "level": 2,
-        //                     "form": {},
-        //                     "branchSteps": [],
-        //                     "nextStep": {}
-        //                 },
-        //                 "candidatesText": "王凡,王凡"
-        //             },
-        //             "bg_color": "#2196f3ff",
-        //             "font_color": "#333333",
-        //             "type": "start",
-        //             "anchorPoints": [
-        //                 [
-        //                     0.5,
-        //                     0.5
-        //                 ]
-        //             ],
-        //             "style": {}
-        //         },
-        //         {
-        //             "id": "1_add_step",
-        //             "x": 50,
-        //             "y": 70,
-        //             "step": {
-        //                 "id": 1,
-        //                 "title": "申请",
-        //                 "category": "start",
-        //                 "level": 1,
-        //                 "form": {},
-        //                 "candidates": [
-        //                     {
-        //                         "id": "013645",
-        //                         "name": "王凡"
-        //                     },
-        //                     {
-        //                         "id": "013645",
-        //                         "name": "王凡"
-        //                     }
-        //                 ],
-        //                 "branchSteps": [],
-        //                 "nextStep": {
-        //                     "id": 9999,
-        //                     "title": "结束",
-        //                     "category": "end",
-        //                     "level": 2,
-        //                     "form": {},
-        //                     "branchSteps": [],
-        //                     "nextStep": {}
-        //                 },
-        //                 "candidatesText": "王凡,王凡"
-        //             },
-        //             "type": "add-child",
-        //             "anchorPoints": [
-        //                 [
-        //                     0.5,
-        //                     0.5
-        //                 ]
-        //             ],
-        //             "style": {}
-        //         },
-        //     ],
-        //     "edges": [
-        //     ]
-        // }
     }
 
     //节点类型的高度
@@ -225,71 +218,62 @@ export default class VM {
     // 流程步骤转节点数据
     static step2chartData(step, prevNode) {
         if (!step || !step.id)
-            return
+            return prevNode
 
         // 添加新的节点
         let lastNode = null
         let stepNode = {}
-        let y = prevNode ? prevNode.y : 0
-        if (null != prevNode)
-            y = y + VM.getNodeHeight(prevNode) + VM.spaceH
-
         if (step.category == 'start') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                // x: 0, // Number，可选，节点位置的 x 值
-                // y: 0, // Number，可选，节点位置的 y 值
-                // type: 'rect', // 矩形节点
-                detail: step,
-                type: 'start',
-                anchorPoints: [
-                    [0.5, 1]
-                ]
+                step: step,
+                type: 'start'
             }
         }
         else if (step.category == 'end') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                // x: 0, // Number，可选，节点位置的 x 值
-                // y: 0, // Number，可选，节点位置的 y 值
                 type: 'end',
-                detail: step,
-                anchorPoints: [
-                    [0.5, 0]
-                ]
+                step: step
+            }
+        } else if (step.category == 'branch') {
+            stepNode = {
+                id: step.id + '', // String，该节点存在则必须，节点的唯一标识
+                type: 'branch',
+                step: step
             }
         } else if (step.category == 'condition') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                // x: 0 , // Number，可选，节点位置的 x 值
-                // y: 0, // Number，可选，节点位置的 y 值
                 type: 'condition',
-                detail: step,
-                anchorPoints: [
-                    [0.5, 0], [0.5, 1]
-                ]
+                step: step
+            }
+        } else if (step.category == 'audit') {
+            stepNode = {
+                id: step.id + '', // String，该节点存在则必须，节点的唯一标识
+                type: 'audit',
+                step: step
+            }
+        } else if (step.category == 'notify') {
+            stepNode = {
+                id: step.id + '', // String，该节点存在则必须，节点的唯一标识
+                type: 'notify',
+                step: step
             }
         }
         VM.chartData.nodes.push(stepNode)
         lastNode = stepNode
 
-        // 与父节点的连线
+        // 与上一个节点的连线
         if (prevNode) {
             let parentEdge = {
                 source: prevNode.id, // String，必须，起始点 id
                 target: stepNode.id, // String，必须，目标点 id
                 label: '', // 边的文本
                 style: {
-                    // endArrow: true,
-                    // startArrow: false,
+                    endArrow: true,
+                    startArrow: false,
                     // 箭头样式
-                    endArrow: {
-                        lineDash: false,
-                        path: G6.Arrow.triangle(10, 10, 2), // 使用内置箭头路径函数，参数为箭头的 宽度、长度、偏移量（默认为 0，与 d 对应）
-                        d: 2,
-                        fill: '#999999ff',
-                        stroke: '#999999ff'
-                    },
                     fill: '#99999966',
                     stroke: '#99999966'
                 }
@@ -297,104 +281,64 @@ export default class VM {
             VM.chartData.edges.push(parentEdge)
         }
 
-        if (step.category == 'end')
-            return lastNode
-
-        //加号节点
-        let addx = 0
-        if(step.category=='condition')
-            addx=stepNode.x+VM.nodeW/2
-        let addStepNode = {
-            id: step.id + '_add_step', // String，该节点存在则必须，节点的唯一标识
-            // x: 0, // Number，可选，节点位置的 x 值
-            // y: 0, // Number，可选，节点位置的 y 值
-            step: step,
-            type: 'add-child',
-            anchorPoints: [
-                [0.5, 0], [0.5, 1]
-            ]
-        }
-        VM.chartData.nodes.push(addStepNode)
-        lastNode = addStepNode
-        let addStepEdge = {
-            source: stepNode.id, // String，必须，起始点 id
-            target: addStepNode.id, // String，必须，目标点 id
-            label: '', // 边的文本
-            style: {
-                fill: '#99999966',
-                stroke: '#99999966'
-            }
-        }
-        VM.chartData.edges.push(addStepEdge)
-
-        //添加条件节点
-        if (step.branchSteps.length > 0) {
-            let addConditionNode = {
-                id: step.id + '_add_condition', // String，该节点存在则必须，节点的唯一标识
-                x: 0, // Number，可选，节点位置的 x 值
-                y: 0, // Number，可选，节点位置的 y 值
+        //非终点,分支节点,增加节点与加号连线
+        if (step.category != 'end' && step.category!='branch') {
+            //加号节点
+            let addStepNode = {
+                id: step.id + '_add_step', // String，该节点存在则必须，节点的唯一标识
                 step: step,
-                type: 'add-condition',
-                anchorPoints: [
-                    [0.5, 0], [0.5, 1]
-                ]
+                type: 'add-child'
             }
-            VM.chartData.nodes.push(addConditionNode)
-            lastNode = addConditionNode
-            let addConditionEdge = {
-                source: addStepNode.id, // String，必须，起始点 id
-                target: addConditionNode.id, // String，必须，目标点 id
+            VM.chartData.nodes.push(addStepNode)
+            lastNode = addStepNode
+            //步骤与加号连线
+            let addStepEdge = {
+                source: stepNode.id, // String，必须，起始点 id
+                target: addStepNode.id, // String，必须，目标点 id
                 label: '', // 边的文本
                 style: {
                     fill: '#99999966',
                     stroke: '#99999966'
                 }
             }
-            VM.chartData.edges.push(addConditionEdge)
+            VM.chartData.edges.push(addStepEdge)
         }
 
         //生成分支节点树
         let branchAddNodes = []
-        let maxBranchY = 0
         for (var i = 0; i < step.branchSteps.length; i++) {
             let branchLastNode = VM.step2chartData(step.branchSteps[i], lastNode)
             branchAddNodes.push(branchLastNode)
-            maxBranchY = Math.max(branchLastNode.y, maxBranchY)
         }
 
         //下一步
-        if (step.nextStep.id) {
-            if (step.branchSteps.length > 0) {
-                //加号节点
-                let addReduceNode = {
-                    id: step.id + '_add_reduce', // String，该节点存在则必须，节点的唯一标识
-                    x: 0, // Number，可选，节点位置的 x 值
-                    y: 0, // Number，可选，节点位置的 y 值
-                    step: step,
-                    type: 'add-child',
-                    anchorPoints: [
-                        [0.5, 0],[0.5,1]
-                    ]
-                }
-                VM.chartData.nodes.push(addReduceNode)
-                lastNode = addReduceNode
-
-                for (var j = 0; j < branchAddNodes.length; j++) {
-                    let addReduceEdge = {
-                        source: branchAddNodes[j].id, // String，必须，起始点 id
-                        target: addReduceNode.id, // String，必须，目标点 id
-                        label: '', // 边的文本
-                        style: {
-                            fill: '#99999966',
-                            stroke: '#99999966'
-                        }
-                    }
-                    VM.chartData.edges.push(addReduceEdge)
-                }
+        if (step.branchSteps.length > 0) {
+            //加号节点
+            let addReduceNode = {
+                id: step.id + '_add_reduce', // String，该节点存在则必须，节点的唯一标识
+                x: 0, // Number，可选，节点位置的 x 值
+                y: 0, // Number，可选，节点位置的 y 值
+                step: step,
+                type: 'add-child'
             }
+            VM.chartData.nodes.push(addReduceNode)
+            lastNode = addReduceNode
 
-            lastNode = VM.step2chartData(step.nextStep, lastNode)
+            for (var j = 0; j < branchAddNodes.length; j++) {
+                let addReduceEdge = {
+                    source: branchAddNodes[j].id, // String，必须，起始点 id
+                    target: addReduceNode.id, // String，必须，目标点 id
+                    label: '', // 边的文本
+                    style: {
+                        fill: '#99999966',
+                        stroke: '#99999966'
+                    }
+                }
+                VM.chartData.edges.push(addReduceEdge)
+            }
         }
+
+        lastNode = VM.step2chartData(step.nextStep, lastNode)
 
         return lastNode
     }
@@ -440,14 +384,18 @@ export default class VM {
 
         if (rootStep.nextStep
             && rootStep.nextStep.category != 'end'
-            && rootStep.nextStep.id)
+            && rootStep.nextStep.id){
             nextMaxId = Math.max(nextMaxId, rootStep.nextStep.id)
-
+            nextMaxId = Math.max(nextMaxId, VM.getMaxStepId(rootStep.nextStep))
+        }
         return nextMaxId
     }
 
     //查找父步骤
     static findParentStep(targetStep, startStep) {
+        if (startStep == null)
+            startStep = VM.template.rootStep
+
         if (startStep.nextStep.id == targetStep.id)
             return startStep
 
@@ -459,6 +407,12 @@ export default class VM {
         for (var i = 0; i < startStep.branchSteps.length; i++) {
             let step = VM.findParentStep(targetStep, startStep.branchSteps[i])
             if (null != step)
+                return step
+        }
+
+        if(startStep.nextStep.id){
+            let step=VM.findParentStep(targetStep, startStep.nextStep)
+            if(null!=step)
                 return step
         }
 
@@ -481,22 +435,24 @@ export default class VM {
         return []
     }
 
+    // 查询步骤的兄弟节点个数
     static getSiblingCount(step) {
-        let parentStep = VM.findParentStep(step,VM.template.rootStep)
-        if(null==parentStep)
+        let parentStep = VM.findParentStep(step, VM.template.rootStep)
+        if (null == parentStep)
             return 0
 
         return parentStep.branchSteps.length
     }
 
+    //查询步骤在兄弟节点中的排名
     static getSiblingIndex(step) {
-        let parentStep = VM.findParentStep(step,VM.template.rootStep)
-        if(null==parentStep)
+        let parentStep = VM.findParentStep(step, VM.template.rootStep)
+        if (null == parentStep)
             return 0
 
-        for(var i=0;i<parentStep.branchSteps.length;i++){
-            if(parentStep.branchSteps[i].id == step.id)
-                return i 
+        for (var i = 0; i < parentStep.branchSteps.length; i++) {
+            if (parentStep.branchSteps[i].id == step.id)
+                return i
         }
 
         return 0
