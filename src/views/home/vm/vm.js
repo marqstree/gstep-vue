@@ -7,7 +7,8 @@ export default class VM {
     static spaceH = 30
     static addR = 10
     static endH = 30
-    static conditionH = 30
+    static branchW = 80
+    static branchH = 30
 
     static addStepH = 30
     static addConditionH = 30
@@ -55,7 +56,7 @@ export default class VM {
             "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
-            "nextStep": VM.END_STEP
+            "nextStep": parentStep.nextStep
         }
         parentStep.nextStep = branchStep
 
@@ -131,22 +132,12 @@ export default class VM {
         VM.refreshChartData()
     }
 
-    // static deleteStep(step) {
-    //     if (step.category == 'condition') {
-    //         let parentStep = VM.findParentStep(step)
-    //         let list = parentStep.branchSteps.filter(e => e.id != step.id)
-    //         if (list.length == 1)
-    //             list = []
-
-    //         parentStep.branchSteps = list
-
-    //         copyNextStepWithoutEndStep
-    //     }
-    // }
-
     static deleteChildStepById(stepId, startStep) {
         if (null == startStep)
             return
+
+        if(!startStep.id)
+            return            
 
         //删除
         if (startStep.nextStep.id == stepId) {
@@ -181,7 +172,8 @@ export default class VM {
 
     static copyNextStepWithoutEndStep(step) {
         let oldNextStep = JSON.parse(JSON.stringify(step.nextStep))
-        if (VM.END_STEP_ID == oldNextStep.id) {
+        if (VM.END_STEP_ID == oldNextStep.id 
+            || !step.id) {
             return {}
         }
 

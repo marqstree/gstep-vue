@@ -148,14 +148,14 @@ const setupChart = () => {
         'branch',
         {
             drawShape: function drawShape(cfg, group) {
-                const color = "#873BF4"
-                const r = 2;
+                const color = "#B66FF5"
+                const r = 16
                 const shape = group.addShape('rect', {
                     attrs: {
-                        x: -VM.nodeW / 2,
-                        y: -VM.conditionH / 2,
-                        width: VM.nodeW,
-                        height: VM.conditionH,
+                        x: -VM.branchW / 2,
+                        y: -VM.branchH / 2,
+                        width: VM.branchW,
+                        height: VM.branchH,
                         stroke: color,
                         fill: color,
                         radius: r,
@@ -182,7 +182,7 @@ const setupChart = () => {
             },
             getAnchorPoints() {
                 return [
-                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                    [0.5, 0], [0.5, 1]
                 ]
             }
         },
@@ -227,7 +227,7 @@ const setupChart = () => {
             },
             getAnchorPoints() {
                 return [
-                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                    [0.5, 0]
                 ]
             }
         },
