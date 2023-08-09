@@ -45,7 +45,7 @@ export default class VM {
     }
 
     // 添加分支步骤
-    static NewBranchStep(parentStep) {
+    static newBranchStep(parentStep) {
         let oldNextStep = VM.copyNextStepWithoutEndStep(parentStep)
 
         let branchStep = {
@@ -60,7 +60,7 @@ export default class VM {
         parentStep.nextStep = branchStep
 
         let firstConditionStep = {
-            "id": branchStep.id+1,
+            "id": branchStep.id + 1,
             "title": "条件1",
             "category": "condition",
             "level": parentStep.level + 1,
@@ -72,7 +72,7 @@ export default class VM {
         branchStep.branchSteps.push(firstConditionStep)
 
         let defaultConditionStep = {
-            "id": branchStep.id+2,
+            "id": branchStep.id + 2,
             "title": '默认条件',
             "category": "condition",
             "level": parentStep.level + 1,
@@ -81,11 +81,38 @@ export default class VM {
             "nextStep": oldNextStep
         }
         branchStep.branchSteps.push(defaultConditionStep)
-        VM.refreshChartData()
+    }
+
+    // 添加分支步骤
+    static newAuditStep(parentStep) {
+        let auditStep = {
+            "id": VM.newStepId(),
+            "title": "审核",
+            "category": "audit",
+            "level": parentStep.level + 1,
+            "form": {},
+            "branchSteps": [],
+            "nextStep": parentStep.nextStep
+        }
+        parentStep.nextStep = auditStep
+    }
+
+    // 添加分支步骤
+    static newNotifyStep(parentStep) {
+        let notifyStep = {
+            "id": VM.newStepId(),
+            "title": "抄送",
+            "category": "notify",
+            "level": parentStep.level + 1,
+            "form": {},
+            "branchSteps": [],
+            "nextStep": parentStep.nextStep
+        }
+        parentStep.nextStep = notifyStep
     }
 
     // 添加条件步骤
-    static AddConditionStep(parentStep) {
+    static addConditionStep(parentStep) {
         let title = '条件' + parentStep.branchSteps.length
 
         let conditionStep = {
@@ -97,7 +124,7 @@ export default class VM {
             "branchSteps": [],
             "nextStep": {}
         }
-        parentStep.branchSteps.splice(parentStep.branchSteps.length-1,0,conditionStep)
+        parentStep.branchSteps.splice(parentStep.branchSteps.length - 1, 0, conditionStep)
         console.log('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
         console.log(VM.template.rootStep)
 
@@ -127,18 +154,18 @@ export default class VM {
         }
 
         //若为条件节点,删除条件节点及其子节点
-        let findIndex=-1
+        let findIndex = -1
         for (var i = 0; i < startStep.branchSteps.length; i++) {
-            if (startStep.branchSteps[i].id == stepId){
+            if (startStep.branchSteps[i].id == stepId) {
                 findIndex = i
                 break
             }
         }
-        if(findIndex>=0)
+        if (findIndex >= 0)
             startStep.branchSteps.splice(findIndex, 1)
 
         //只剩一个默认条件节点时,删除默认条件节点
-        if (startStep.category=='branch' && startStep.branchSteps.length <= 1){
+        if (startStep.category == 'branch' && startStep.branchSteps.length <= 1) {
             let parentStep = VM.findParentStep(startStep)
             startStep.branchSteps = []
             parentStep.nextStep = startStep.nextStep
@@ -154,7 +181,7 @@ export default class VM {
 
     static copyNextStepWithoutEndStep(step) {
         let oldNextStep = JSON.parse(JSON.stringify(step.nextStep))
-        if(VM.END_STEP_ID == oldNextStep.id){
+        if (VM.END_STEP_ID == oldNextStep.id) {
             return {}
         }
 
@@ -271,18 +298,18 @@ export default class VM {
                 target: stepNode.id, // String，必须，目标点 id
                 label: '', // 边的文本
                 style: {
-                    endArrow: true,
-                    startArrow: false,
-                    // 箭头样式
-                    fill: '#99999966',
-                    stroke: '#99999966'
+                    endArrow: {
+                        path: G6.Arrow.triangle(),
+                        stroke: "#F6BD16",
+                        fill: "#F6BD16"
+                    },
                 }
             }
             VM.chartData.edges.push(parentEdge)
         }
 
         //非终点,分支节点,增加节点与加号连线
-        if (step.category != 'end' && step.category!='branch') {
+        if (step.category != 'end' && step.category != 'branch') {
             //加号节点
             let addStepNode = {
                 id: step.id + '_add_step', // String，该节点存在则必须，节点的唯一标识
@@ -296,10 +323,6 @@ export default class VM {
                 source: stepNode.id, // String，必须，起始点 id
                 target: addStepNode.id, // String，必须，目标点 id
                 label: '', // 边的文本
-                style: {
-                    fill: '#99999966',
-                    stroke: '#99999966'
-                }
             }
             VM.chartData.edges.push(addStepEdge)
         }
@@ -329,10 +352,6 @@ export default class VM {
                     source: branchAddNodes[j].id, // String，必须，起始点 id
                     target: addReduceNode.id, // String，必须，目标点 id
                     label: '', // 边的文本
-                    style: {
-                        fill: '#99999966',
-                        stroke: '#99999966'
-                    }
                 }
                 VM.chartData.edges.push(addReduceEdge)
             }
@@ -384,7 +403,7 @@ export default class VM {
 
         if (rootStep.nextStep
             && rootStep.nextStep.category != 'end'
-            && rootStep.nextStep.id){
+            && rootStep.nextStep.id) {
             nextMaxId = Math.max(nextMaxId, rootStep.nextStep.id)
             nextMaxId = Math.max(nextMaxId, VM.getMaxStepId(rootStep.nextStep))
         }
@@ -410,9 +429,9 @@ export default class VM {
                 return step
         }
 
-        if(startStep.nextStep.id){
-            let step=VM.findParentStep(targetStep, startStep.nextStep)
-            if(null!=step)
+        if (startStep.nextStep.id) {
+            let step = VM.findParentStep(targetStep, startStep.nextStep)
+            if (null != step)
                 return step
         }
 

@@ -24,6 +24,8 @@ export function deleteConfirm() {
                 type: 'info',
                 message: '取消删除',
             })
+
+            return Promise.reject()
         })
 
 }
