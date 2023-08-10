@@ -4,12 +4,12 @@
   
 <script setup>
 import G6 from '@antv/g6'
-import { onMounted, ref, defineEmits } from 'vue'
+import { onMounted, ref, watch,defineProps,defineEmits } from 'vue'
 import VM from '../vm/vm'
 import { deleteConfirm } from '@/util/message_util'
 
 
-const emit = defineEmits(['update:isShowDrawer'])
+const emit = defineEmits(['update:isShowDrawer','update:isRefreshChart'])
 
 let graph = null
 
@@ -20,12 +20,22 @@ onMounted(async () => {
         VM.newTemplate()
 
     VM.step2chartData(VM.template.rootStep, null)
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    console.log(VM.chartData)
     setupChart()
 })
 
+const props = defineProps({
+    isRefreshChart:Boolean
+})
+
+watch(props,()=>{
+    if(props.isRefreshChart){
+        refreshChart()
+        emit('update:isRefreshChart',false)
+    }
+})
+
 const refreshChart = () => {
+    console.log('+++ 刷新流程图 ++++++++++++++')
     VM.refreshChartData()
     // 加载流程图数据
     graph.data(VM.chartData) // 读取 Step 2 中的数据源到图上
@@ -168,7 +178,7 @@ const setupChart = () => {
                     attrs: {
                         x: 0,
                         y: 0,
-                        text: "添加条件-" + cfg.step.id,
+                        text: "添加条件",
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -470,22 +480,22 @@ const setupChart = () => {
 
     // 加号弹窗菜单
     const menu = new G6.Menu({
-        offsetX: 10,
-        offsetX: 10,
+        offsetX: 5,
+        offsetY: -40,
         itemTypes: ['node'],
         getContent(e) {
             const outDiv = document.createElement('div');
-            outDiv.innerHTML = `<div style='font-size:16px;cursor:pointer;display:flex;align-items: center;justify-content: center;'>
-                                    <div style='padding: 10px 15px;text-align:center;' data-tag='menu-condition'>
-                                        <image src="https://www.bqdnao.com/faceroop-static/condition.png" style="width:60px;height:60px;" data-tag='menu-condition'/>
+            outDiv.innerHTML = `<div style='font-size:12px;cursor:pointer;display:flex;align-items: center;justify-content: center;'>
+                                    <div style='padding: 0 5px;text-align:center;' data-tag='menu-condition'>
+                                        <image src="https://www.bqdnao.com/faceroop-static/condition.png" style="width:25px;height:25px;" data-tag='menu-condition'/>
                                         <div style='margin-top:5px;' data-tag='menu-condition'>条件分支</div>
                                     </div>
                                     <div style='padding: 10px 15px;text-align:center;' data-tag='menu-audit'>
-                                        <image src="https://www.bqdnao.com/faceroop-static/stamp.png" style="width:60px;height:60px;" data-tag='menu-audit' />
+                                        <image src="https://www.bqdnao.com/faceroop-static/stamp.png" style="width:25px;height:25px;" data-tag='menu-audit' />
                                         <div style='margin-top:5px;' data-tag='menu-audit'>审核人</div>
                                     </div>
                                     <div style='padding: 10px 15px;text-align:center;' data-tag='menu-notify'>
-                                        <image src="https://www.bqdnao.com/faceroop-static/plane.png" style="width:60px;height:60px;" data-tag='menu-notify' />
+                                        <image src="https://www.bqdnao.com/faceroop-static/plane.png" style="width:25px;height:25px;" data-tag='menu-notify' />
                                         <div style='margin-top:5px;'data-tag='menu-notify'>抄送人</div>
                                     </div>
                                 </div>`
@@ -502,9 +512,7 @@ const setupChart = () => {
             let step = item._cfg.model.step
             if (target.dataset.tag == 'menu-condition') {
                 console.log('+++ click menu-condition +++++++++++++++++++')
-
                 VM.newBranchStep(step)
-                console.log(VM.template.rootStep)
                 refreshChart()
             } else if (target.dataset.tag == 'menu-audit') {
                 console.log('+++ click menu-audit +++++++++++++++++++')
@@ -598,7 +606,7 @@ const setupChart = () => {
 <style scoped>
 #mountNode {
     width: 100%;
-    height: 100vh;
+    height: 100%;
     position: relative;
 }
 </style>

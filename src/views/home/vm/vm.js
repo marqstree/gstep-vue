@@ -1,4 +1,5 @@
 import G6 from '@antv/g6'
+import ApiUtil from '@/api/api'
 import { fittingString } from '@/util/str_util'
 
 export default class VM {
@@ -39,7 +40,7 @@ export default class VM {
     // 查询入库流程图数据
     static async getData() {
         const params = {
-            groupId: template.groupId
+            groupId: VM.template.groupId
         }
         template = await ApiUtil.template_detail(params)
     }
@@ -196,12 +197,16 @@ export default class VM {
 
     //刷新图表节点,连线列表
     static refreshChartData() {
+        console.log('+++ 流程步骤转流程图数据 ++++++++++')
+        console.log('>>>> 根流程步骤 >>>>>>>>>>>>>>>>>>')
+        console.log(VM.template.rootStep)
         VM.chartData = {
             nodes: [],
             edges: []
         }
         VM.formatStep(VM.template.rootStep)
         VM.step2chartData(VM.template.rootStep, null)
+        console.log('<<< 流程图数据 <<<<<<<<<<<<<<<<<<<<')
         console.log(VM.chartData)
     }
 

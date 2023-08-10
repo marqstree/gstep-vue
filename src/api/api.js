@@ -3,17 +3,17 @@ import request_json from "@/util/request_json"
 import request_upload from '@/util/request_upload.js'
 
 class ApiUtil {
-    static auth_login(data) {
+    static template_detail(data) {
         return request_json({
-            url: "/admin/auth/login",
+            url: "/template/detail",
             method: "POST",
             data
         })
     }
 
-    static template_detail(data) {
+    static template_save(data) {
         return request_json({
-            url: "/template/detail",
+            url: "/template/save",
             method: "POST",
             data
         })
