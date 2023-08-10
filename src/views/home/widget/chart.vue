@@ -4,12 +4,12 @@
   
 <script setup>
 import G6 from '@antv/g6'
-import { onMounted, ref, watch,defineProps,defineEmits } from 'vue'
+import { onMounted, ref, watch, defineProps, defineEmits } from 'vue'
 import VM from '../vm/vm'
 import { deleteConfirm } from '@/util/message_util'
 
 
-const emit = defineEmits(['update:isShowDrawer','update:isRefreshChart'])
+const emit = defineEmits(['update:isShowDrawer', 'update:isRefreshChart'])
 
 let graph = null
 
@@ -24,13 +24,13 @@ onMounted(async () => {
 })
 
 const props = defineProps({
-    isRefreshChart:Boolean
+    isRefreshChart: Boolean
 })
 
-watch(props,()=>{
-    if(props.isRefreshChart){
+watch(props, () => {
+    if (props.isRefreshChart) {
         refreshChart()
-        emit('update:isRefreshChart',false)
+        emit('update:isRefreshChart', false)
     }
 })
 
@@ -64,6 +64,7 @@ const setupChart = () => {
                         height: VM.nodeH,
                         stroke: VM.BG_PRIMARY_COLOR,
                         radius: r,
+                        cursor: 'pointer',
                     },
                     name: 'main-box'
                 })
@@ -84,7 +85,7 @@ const setupChart = () => {
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        y: -VM.nodeH / 2 + 10,
+                        y: -VM.nodeH / 2 + 11,
                         x: 0,
                         text: cfg.step.title,
                         fill: '#fff',
@@ -102,11 +103,12 @@ const setupChart = () => {
                     attrs: {
                         y: -VM.nodeH / 2 + 35,
                         x: 0,
-                        text: cfg.step.candidatesText,
+                        text: cfg.step.detailText,
                         fill: '#000',
                         fontSize: 12,
                         textAlign: 'center',
-                        textBaseline: 'middle'
+                        textBaseline: 'middle',
+                        cursor: 'pointer',
                     },
                     name: 'title',
                 })
@@ -169,6 +171,7 @@ const setupChart = () => {
                         stroke: color,
                         fill: color,
                         radius: r,
+                        cursor: 'pointer',
                     },
                     name: 'main-box'
                 })
@@ -205,15 +208,15 @@ const setupChart = () => {
         {
             drawShape: function drawShape(cfg, group) {
                 const color = VM.BG_PRIMARY_COLOR;
-                const r = 2;
+                const r = 16
                 const shape = group.addShape('rect', {
                     attrs: {
                         x: -VM.nodeW / 2,
                         y: -VM.endH / 2,
                         width: VM.nodeW,
                         height: VM.endH,
-                        stroke: VM.BG_END_COLOR,
-                        fill: VM.BG_END_COLOR,
+                        stroke: "#909399",
+                        fill: "#909399",
                         radius: r,
                     },
                     name: 'main-box'
@@ -259,6 +262,7 @@ const setupChart = () => {
                         height: VM.nodeH,
                         stroke: color,
                         radius: r,
+                        cursor: 'pointer',
                     },
                     name: 'main-box'
                 })
@@ -281,13 +285,12 @@ const setupChart = () => {
                     attrs: {
                         textBaseline: 'middle',
                         textAlign: 'center',
-                        y: -VM.nodeH / 2 + 10,
+                        y: -VM.nodeH / 2 + 11,
                         x: 0,
                         text: cfg.step.title,
                         fill: '#fff',
                         fontSize: 14,
                         fontWeight: 'bold',
-
                     },
                     name: 'title',
                 })
@@ -312,9 +315,9 @@ const setupChart = () => {
                     attrs: {
                         textBaseline: 'middle',
                         textAlign: 'center',
-                        y: -VM.nodeH / 2 + 20,
+                        y: -VM.nodeH / 2 + 35,
                         x: 0,
-                        text: cfg.step.expression,
+                        text: cfg.step.detailText,
                         fill: '#000',
                         fontSize: 12
                     },
@@ -347,6 +350,7 @@ const setupChart = () => {
                         height: VM.nodeH,
                         stroke: color,
                         radius: r,
+                        cursor: 'pointer',
                     },
                     name: 'main-box'
                 })
@@ -367,7 +371,7 @@ const setupChart = () => {
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        y: -VM.nodeH / 2 + 10,
+                        y: -VM.nodeH / 2 + 11,
                         x: 0,
                         text: cfg.step.title,
                         fill: '#fff',
@@ -375,9 +379,21 @@ const setupChart = () => {
                         textAlign: 'center',
                         textBaseline: 'middle',
                         fontWeight: 'bold',
-                        cursor: 'pointer',
                     },
                     name: 'title',
+                })
+
+                //删除图标
+                group.addShape('image', {
+                    attrs: {
+                        x: 40,
+                        y: -VM.nodeH / 2 + 3,
+                        width: 14,
+                        height: 14,
+                        img: 'https://www.bqdnao.com/faceroop-static/close_white.png',
+                        cursor: 'pointer',
+                    },
+                    name: 'delete-audit-image',
                 })
 
                 // detail text
@@ -385,13 +401,14 @@ const setupChart = () => {
                     attrs: {
                         y: -VM.nodeH / 2 + 35,
                         x: 0,
-                        text: cfg.step.candidatesText,
+                        text: cfg.step.detailText,
                         fill: '#000',
                         fontSize: 12,
                         textAlign: 'center',
-                        textBaseline: 'middle'
+                        textBaseline: 'middle',
+                        cursor: 'pointer',
                     },
-                    name: 'title',
+                    name: 'detail',
                 })
 
                 return shape
@@ -420,6 +437,7 @@ const setupChart = () => {
                         height: VM.nodeH,
                         stroke: color,
                         radius: r,
+                        cursor: 'pointer',
                     },
                     name: 'main-box'
                 })
@@ -440,7 +458,7 @@ const setupChart = () => {
                 // title text
                 group.addShape('text', {
                     attrs: {
-                        y: -VM.nodeH / 2 + 10,
+                        y: -VM.nodeH / 2 + 11,
                         x: 0,
                         text: cfg.step.title,
                         fill: '#fff',
@@ -453,16 +471,30 @@ const setupChart = () => {
                     name: 'title',
                 })
 
+                //删除图标
+                group.addShape('image', {
+                    attrs: {
+                        x: 40,
+                        y: -VM.nodeH / 2 + 3,
+                        width: 14,
+                        height: 14,
+                        img: 'https://www.bqdnao.com/faceroop-static/close_white.png',
+                        cursor: 'pointer',
+                    },
+                    name: 'delete-notify-image',
+                })
+
                 // detail text
                 group.addShape('text', {
                     attrs: {
                         y: -VM.nodeH / 2 + 35,
                         x: 0,
-                        text: cfg.step.candidatesText,
+                        text: cfg.step.detailText,
                         fill: '#000',
                         fontSize: 12,
                         textAlign: 'center',
-                        textBaseline: 'middle'
+                        textBaseline: 'middle',
+                        cursor: 'pointer',
                     },
                     name: 'title',
                 })
@@ -526,7 +558,7 @@ const setupChart = () => {
 
             return true
         },
-    });
+    })
 
     // 定义g6图
     graph = new G6.Graph({
@@ -547,7 +579,7 @@ const setupChart = () => {
             controlPoints: true
         },
         defaultNode: {
-            size: [VM.nodeW, VM.nodeH*0.6],
+            size: [VM.nodeW, VM.nodeH * 0.6],
             type: 'rect',
             anchorPoints: [[0.5, 0], [0.5, 1]]
         },
@@ -589,6 +621,31 @@ const setupChart = () => {
     graph.on('delete-condition-image:click', (e) => {
         const { item } = e
         console.log("+++++++++ delete-condition-image:click ++++++++++++++++")
+        e.bubbles=false
+        let step = item._cfg.model.step
+        deleteConfirm().then(() => {
+            VM.deleteChildStepById(step.id, VM.template.rootStep)
+            refreshChart()
+        })
+    })
+
+    //审核节点:删除按钮
+    graph.on('delete-audit-image:click', (e) => {
+        const { item } = e
+        console.log("+++++++++ delete-audit-image:click ++++++++++++++++")
+        e.bubbles=false
+        let step = item._cfg.model.step
+        deleteConfirm().then(() => {
+            VM.deleteChildStepById(step.id, VM.template.rootStep)
+            refreshChart()
+        })
+    })
+
+    //抄送节点:删除按钮
+    graph.on('delete-notify-image:click', (e) => {
+        const { item } = e
+        console.log("+++++++++ delete-notify-image:click ++++++++++++++++")
+        e.bubbles=false
         let step = item._cfg.model.step
         deleteConfirm().then(() => {
             VM.deleteChildStepById(step.id, VM.template.rootStep)

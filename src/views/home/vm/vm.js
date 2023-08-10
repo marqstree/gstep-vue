@@ -53,13 +53,13 @@ export default class VM {
         let oldNextStep = parentStep.nextStep
         //分支步骤链中插入新分支时
         //新分支的下一步为空
-        if(finalStep.id != VM.END_STEP_ID){
+        if (finalStep.id != VM.END_STEP_ID) {
             branchNextStep = {}
         }
         //主干分支步骤链路中插入新分支时
         //将原主干链路(除结束步骤外)挂接到新分支的默认条件步骤下
         //新分支的下一步为结束步骤
-        else{
+        else {
             oldNextStep = VM.copyNextStepWithoutEndStep(parentStep)
         }
 
@@ -67,7 +67,7 @@ export default class VM {
         let branchStepId = VM.newStepId()
         let branchStep = {
             "id": branchStepId,
-            "title": ""+branchStepId,
+            "title": "" + branchStepId,
             "category": "branch",
             "form": {},
             "branchSteps": [],
@@ -77,7 +77,7 @@ export default class VM {
 
         //新分支的条件1步骤
         let firstConditionStep = {
-            "id": branchStepId+1,
+            "id": branchStepId + 1,
             "title": "条件1",
             "category": "condition",
             "form": {},
@@ -89,7 +89,7 @@ export default class VM {
 
         //新分支的默认条件步骤
         let defaultConditionStep = {
-            "id": branchStepId+2,
+            "id": branchStepId + 2,
             "title": '默认条件',
             "category": "condition",
             "form": {},
@@ -272,7 +272,7 @@ export default class VM {
                 type: 'end',
                 step: step
             }
-        }else if (step.category == 'condition') {
+        } else if (step.category == 'condition') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
                 type: 'condition',
@@ -296,7 +296,7 @@ export default class VM {
                 type: 'branch',
                 step: step
             }
-        } 
+        }
         VM.chartData.nodes.push(stepNode)
         lastNode = stepNode
 
@@ -309,8 +309,8 @@ export default class VM {
                 style: {
                     endArrow: {
                         path: G6.Arrow.triangle(),
-                        stroke: "#F6BD16",
-                        fill: "#F6BD16"
+                        stroke: "#C2C8D5",
+                        fill: "#C2C8D5"
                     },
                 }
             }
@@ -343,10 +343,10 @@ export default class VM {
                 let branchLastNode = VM.step2chartData(step.branchSteps[i], lastNode)
                 branchAddNodes.push(branchLastNode)
             }
-        
+
             //汇聚加号节点
             let addReduceNode = {
-                id: step.id + '_add_reduce', 
+                id: step.id + '_add_reduce',
                 x: 0, // Number，可选，节点位置的 x 值
                 y: 0, // Number，可选，节点位置的 y 值
                 step: step,
@@ -365,7 +365,7 @@ export default class VM {
             }
         }
 
-        if(step.nextStep && step.nextStep.id)
+        if (step.nextStep && step.nextStep.id)
             lastNode = VM.step2chartData(step.nextStep, lastNode)
 
         return lastNode
@@ -377,16 +377,35 @@ export default class VM {
             return
 
         // 候选人文案
-        step.candidatesText = ''
-        if (step.candidates && step.candidates.length > 0) {
-            let txt = step.candidates.map(e => e.name).join(',')
+        if (step.category == 'start'
+            || step.category == 'audit'
+            || step.category == 'notify') {
+            let txt = ''
+            if(step.candidates && step.candidates.length>0)
+                txt = step.candidates.map(e => e.name).join(',')
+            if (!txt.trim()) {
+                if (step.category == 'start')
+                    txt = '请选择申请人'
+                else if (step.category == 'audit')
+                    txt = '请选择审核人'
+                else if (step.category == 'notify')
+                    txt = '请选择抄送人'
+            }
             // 文案最宽90px,字号14px
-            step.candidatesText = fittingString(txt, 90, 14)
+            step.detailText = fittingString(txt, 120, 14)
+        }
+        else if(step.category == 'condition'){
+            step.detailText = step.expression ? step.expression.trim() : ''
+            if(!step.detailText)
+                step.detailText = '请选择条件'
         }
 
-        if (step.nextSteps && step.nextSteps.length > 0) {
-            step.nextSteps.forEach(item => {
-                VM.formatStep(item)
+        if (step.nextStep.id)
+            VM.formatStep(step.nextStep)
+
+        if (step.category == 'branch') {
+            step.branchSteps.forEach(e => {
+                VM.formatStep(e)
             })
         }
     }
