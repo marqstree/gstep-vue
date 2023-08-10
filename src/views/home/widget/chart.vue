@@ -168,7 +168,7 @@ const setupChart = () => {
                     attrs: {
                         x: 0,
                         y: 0,
-                        text: "添加条件",
+                        text: "添加条件-"+cfg.step.id,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -504,6 +504,7 @@ const setupChart = () => {
                 console.log('+++ click menu-condition +++++++++++++++++++')
 
                 VM.newBranchStep(step)
+                console.log(VM.template.rootStep)
                 refreshChart()
             } else if (target.dataset.tag == 'menu-audit') {
                 console.log('+++ click menu-audit +++++++++++++++++++')

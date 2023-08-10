@@ -47,21 +47,38 @@ export default class VM {
 
     // 添加分支步骤
     static newBranchStep(parentStep) {
-        let oldNextStep = VM.copyNextStepWithoutEndStep(parentStep)
+        //查询步骤链路的最后一步
+        let finalStep = VM.findFinalStep(parentStep)
+        let branchNextStep = VM.END_STEP
+        let oldNextStep = parentStep.nextStep
+        //分支步骤链中插入新分支时
+        //新分支的下一步为空
+        if(finalStep.id != VM.END_STEP_ID){
+            branchNextStep = {}
+        }
+        //主干分支步骤链路中插入新分支时
+        //将原主干链路(除结束步骤外)挂接到新分支的默认条件步骤下
+        //新分支的下一步为结束步骤
+        else{
+            oldNextStep = VM.copyNextStepWithoutEndStep(parentStep)
+        }
 
+        // 新建分支步骤
+        let branchStepId = VM.newStepId()
         let branchStep = {
-            "id": VM.newStepId(),
-            "title": "",
+            "id": branchStepId,
+            "title": ""+branchStepId,
             "category": "branch",
             "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
-            "nextStep": parentStep.nextStep
+            "nextStep": branchNextStep
         }
         parentStep.nextStep = branchStep
 
+        //新分支的条件1步骤
         let firstConditionStep = {
-            "id": branchStep.id + 1,
+            "id": branchStepId+1,
             "title": "条件1",
             "category": "condition",
             "level": parentStep.level + 1,
@@ -72,8 +89,9 @@ export default class VM {
         branchStep.branchSteps = []
         branchStep.branchSteps.push(firstConditionStep)
 
+        //新分支的默认条件步骤
         let defaultConditionStep = {
-            "id": branchStep.id + 2,
+            "id": branchStepId+2,
             "title": '默认条件',
             "category": "condition",
             "level": parentStep.level + 1,
@@ -126,18 +144,16 @@ export default class VM {
             "nextStep": {}
         }
         parentStep.branchSteps.splice(parentStep.branchSteps.length - 1, 0, conditionStep)
-        console.log('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
-        console.log(VM.template.rootStep)
-
         VM.refreshChartData()
     }
 
+    //删除步骤的子步骤中的指定步骤
     static deleteChildStepById(stepId, startStep) {
         if (null == startStep)
             return
 
-        if(!startStep.id)
-            return            
+        if (!startStep.id)
+            return
 
         //删除
         if (startStep.nextStep.id == stepId) {
@@ -155,24 +171,28 @@ export default class VM {
         if (findIndex >= 0)
             startStep.branchSteps.splice(findIndex, 1)
 
-        //只剩一个默认条件节点时,删除默认条件节点
+        //只剩一个默认条件节点时,删除默认条件节点及其父分支节点
         if (startStep.category == 'branch' && startStep.branchSteps.length <= 1) {
             let parentStep = VM.findParentStep(startStep)
             startStep.branchSteps = []
             parentStep.nextStep = startStep.nextStep
         }
 
+        //递归删除步骤链路
         if (startStep.nextStep.id)
             VM.deleteChildStepById(stepId, startStep.nextStep)
 
+        //递归删除分支步骤
         for (var i = 0; i < startStep.branchSteps.length; i++) {
             VM.deleteChildStepById(stepId, startStep.branchSteps[i])
         }
     }
 
+    //拷贝流程步骤链
+    //主干流程排除掉最后结束步骤
     static copyNextStepWithoutEndStep(step) {
         let oldNextStep = JSON.parse(JSON.stringify(step.nextStep))
-        if (VM.END_STEP_ID == oldNextStep.id 
+        if (VM.END_STEP_ID == oldNextStep.id
             || !step.id) {
             return {}
         }
@@ -255,13 +275,7 @@ export default class VM {
                 type: 'end',
                 step: step
             }
-        } else if (step.category == 'branch') {
-            stepNode = {
-                id: step.id + '', // String，该节点存在则必须，节点的唯一标识
-                type: 'branch',
-                step: step
-            }
-        } else if (step.category == 'condition') {
+        }else if (step.category == 'condition') {
             stepNode = {
                 id: step.id + '', // String，该节点存在则必须，节点的唯一标识
                 type: 'condition',
@@ -279,7 +293,13 @@ export default class VM {
                 type: 'notify',
                 step: step
             }
-        }
+        } else if (step.category == 'branch') {
+            stepNode = {
+                id: step.id + '', // String，该节点存在则必须，节点的唯一标识
+                type: 'branch',
+                step: step
+            }
+        } 
         VM.chartData.nodes.push(stepNode)
         lastNode = stepNode
 
@@ -300,7 +320,7 @@ export default class VM {
             VM.chartData.edges.push(parentEdge)
         }
 
-        //非终点,分支节点,增加节点与加号连线
+        //非终点/分支节点,增加节点与加号连线
         if (step.category != 'end' && step.category != 'branch') {
             //加号节点
             let addStepNode = {
@@ -320,17 +340,16 @@ export default class VM {
         }
 
         //生成分支节点树
-        let branchAddNodes = []
-        for (var i = 0; i < step.branchSteps.length; i++) {
-            let branchLastNode = VM.step2chartData(step.branchSteps[i], lastNode)
-            branchAddNodes.push(branchLastNode)
-        }
-
-        //下一步
-        if (step.branchSteps.length > 0) {
-            //加号节点
+        if (step.category == 'branch') {
+            let branchAddNodes = []
+            for (var i = 0; i < step.branchSteps.length; i++) {
+                let branchLastNode = VM.step2chartData(step.branchSteps[i], lastNode)
+                branchAddNodes.push(branchLastNode)
+            }
+        
+            //汇聚加号节点
             let addReduceNode = {
-                id: step.id + '_add_reduce', // String，该节点存在则必须，节点的唯一标识
+                id: step.id + '_add_reduce', 
                 x: 0, // Number，可选，节点位置的 x 值
                 y: 0, // Number，可选，节点位置的 y 值
                 step: step,
@@ -349,7 +368,8 @@ export default class VM {
             }
         }
 
-        lastNode = VM.step2chartData(step.nextStep, lastNode)
+        if(step.nextStep && step.nextStep.id)
+            lastNode = VM.step2chartData(step.nextStep, lastNode)
 
         return lastNode
     }
@@ -428,6 +448,19 @@ export default class VM {
         }
 
         return null
+    }
+
+    //查找步骤链的最后一个步骤
+    static findFinalStep(startStep) {
+        if (startStep == null)
+            startStep = VM.template.rootStep
+
+        if (!startStep.nextStep.id)
+            return startStep
+
+        let nextStep = VM.findFinalStep(startStep.nextStep)
+
+        return nextStep
     }
 
     //查找分支最后一个步骤列表
