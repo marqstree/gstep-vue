@@ -31,7 +31,6 @@ export default class VM {
         "id": VM.END_STEP_ID,
         "title": "结束",
         "category": "end",
-        "level": 2,
         "form": {},
         "branchSteps": [],
         "nextStep": {}
@@ -69,7 +68,6 @@ export default class VM {
             "id": branchStepId,
             "title": ""+branchStepId,
             "category": "branch",
-            "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
             "nextStep": branchNextStep
@@ -81,7 +79,6 @@ export default class VM {
             "id": branchStepId+1,
             "title": "条件1",
             "category": "condition",
-            "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
             "nextStep": {}
@@ -94,7 +91,6 @@ export default class VM {
             "id": branchStepId+2,
             "title": '默认条件',
             "category": "condition",
-            "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
             "nextStep": oldNextStep
@@ -108,7 +104,6 @@ export default class VM {
             "id": VM.newStepId(),
             "title": "审核",
             "category": "audit",
-            "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -122,7 +117,6 @@ export default class VM {
             "id": VM.newStepId(),
             "title": "抄送",
             "category": "notify",
-            "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -138,7 +132,6 @@ export default class VM {
             "id": VM.newStepId(),
             "title": title,
             "category": "condition",
-            "level": parentStep.level + 1,
             "form": {},
             "branchSteps": [],
             "nextStep": {}
@@ -219,7 +212,6 @@ export default class VM {
                 "id": 1,
                 "title": "申请",
                 "category": "start",
-                "level": 1,
                 "form": {},
                 "candidates": [{
                     "id": "013645",

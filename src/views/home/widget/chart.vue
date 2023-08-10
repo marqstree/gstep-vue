@@ -168,7 +168,7 @@ const setupChart = () => {
                     attrs: {
                         x: 0,
                         y: 0,
-                        text: "添加条件-"+cfg.step.id,
+                        text: "添加条件-" + cfg.step.id,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -286,7 +286,7 @@ const setupChart = () => {
                     group.addShape('image', {
                         attrs: {
                             x: 40,
-                            y: -VM.nodeH/2 + 3,
+                            y: -VM.nodeH / 2 + 3,
                             width: 14,
                             height: 14,
                             img: 'https://www.bqdnao.com/faceroop-static/close_white.png',
@@ -315,7 +315,7 @@ const setupChart = () => {
             },
             getAnchorPoints() {
                 return [
-                    [0.5, 0], [0.5, 1], [0, 0.5], [1, 0.5]
+                    [0.5, 0], [0.5, 1]
                 ]
             }
         },
@@ -388,7 +388,7 @@ const setupChart = () => {
             },
             getAnchorPoints() {
                 return [
-                    [0.5, 0],[0.5,1]
+                    [0.5, 0], [0.5, 1]
                 ]
             }
         },
@@ -461,14 +461,14 @@ const setupChart = () => {
             },
             getAnchorPoints() {
                 return [
-                    [0.5, 0],[0.5,1]
+                    [0.5, 0], [0.5, 1]
                 ]
             }
         },
         'single-node',
     )
 
-    // 自定义菜单
+    // 加号弹窗菜单
     const menu = new G6.Menu({
         offsetX: 10,
         offsetX: 10,
@@ -534,9 +534,14 @@ const setupChart = () => {
         layout: {
             type: 'dagre',
             rankdir: 'TB',
-            ranksep: 14,
-            nodesep: 40,
+            ranksep: 15,
+            nodesep: 30,
             controlPoints: true
+        },
+        defaultNode: {
+            size: [VM.nodeW, VM.nodeH*0.6],
+            type: 'rect',
+            anchorPoints: [[0.5, 0], [0.5, 1]]
         },
         defaultEdge: {
             type: 'polyline',
