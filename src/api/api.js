@@ -18,6 +18,22 @@ class ApiUtil {
             data
         })
     }
+
+    static department_get_child_department(data) {
+        return request_json({
+            url: "/department/get_child_department",
+            method: "POST",
+            data
+        })
+    }
+
+    static department_get_users(data) {
+        return request_json({
+            url: "/department/get_users",
+            method: "POST",
+            data
+        })
+    }
 }
 
 export default ApiUtil

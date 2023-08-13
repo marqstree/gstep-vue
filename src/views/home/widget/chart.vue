@@ -24,7 +24,8 @@ onMounted(async () => {
 })
 
 const props = defineProps({
-    isRefreshChart: Boolean
+    isRefreshChart: Boolean,
+    selectStep: Object
 })
 
 watch(props, () => {
@@ -32,6 +33,8 @@ watch(props, () => {
         refreshChart()
         emit('update:isRefreshChart', false)
     }
+}, {
+    immediate: true
 })
 
 const refreshChart = () => {
@@ -226,7 +229,7 @@ const setupChart = () => {
                 group.addShape('text', {
                     attrs: {
                         x: 0,
-                        y: 0,
+                        y: 1.5,
                         text: "结束",
                         fill: '#fff',
                         fontSize: 14,
@@ -291,6 +294,7 @@ const setupChart = () => {
                         fill: '#fff',
                         fontSize: 14,
                         fontWeight: 'bold',
+                        cursor: 'pointer',
                     },
                     name: 'title',
                 })
@@ -319,7 +323,8 @@ const setupChart = () => {
                         x: 0,
                         text: cfg.step.detailText,
                         fill: '#000',
-                        fontSize: 12
+                        fontSize: 12,
+                        cursor: 'pointer',
                     },
                     name: 'title',
                 })
@@ -568,7 +573,7 @@ const setupChart = () => {
         },
         container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
         plugins: [menu], // 配置 Menu 插件
-        fitView: true, // 是否将图适配到画布大小，可以防止超出画布或留白太多。
+        fitView: false, // 是否将图适配到画布大小，可以防止超出画布或留白太多。
         width: scrollWidth, // Number，必须，图的宽度
         height: scrollHeight, // Number，必须，图的高度
         layout: {
@@ -608,7 +613,9 @@ const setupChart = () => {
         console.log("+++++++++ node:click ++++++++++++++++")
         if (item._cfg.currentShape == 'start'
             || item._cfg.currentShape == 'audit'
-            || item._cfg.currentShape == 'notify') {
+            || item._cfg.currentShape == 'notify'
+            || (item._cfg.currentShape == 'condition' && item._cfg.model.step.title!='默认条件')) {
+            emit('update:selectStep', item._cfg.model.step)
             emit('update:isShowDrawer', true)
         } else if (item._cfg.currentShape == 'branch') {
             let step = item._cfg.model.step
@@ -621,7 +628,7 @@ const setupChart = () => {
     graph.on('delete-condition-image:click', (e) => {
         const { item } = e
         console.log("+++++++++ delete-condition-image:click ++++++++++++++++")
-        e.bubbles=false
+        e.bubbles = false
         let step = item._cfg.model.step
         deleteConfirm().then(() => {
             VM.deleteChildStepById(step.id, VM.template.rootStep)
@@ -633,7 +640,7 @@ const setupChart = () => {
     graph.on('delete-audit-image:click', (e) => {
         const { item } = e
         console.log("+++++++++ delete-audit-image:click ++++++++++++++++")
-        e.bubbles=false
+        e.bubbles = false
         let step = item._cfg.model.step
         deleteConfirm().then(() => {
             VM.deleteChildStepById(step.id, VM.template.rootStep)
@@ -645,7 +652,7 @@ const setupChart = () => {
     graph.on('delete-notify-image:click', (e) => {
         const { item } = e
         console.log("+++++++++ delete-notify-image:click ++++++++++++++++")
-        e.bubbles=false
+        e.bubbles = false
         let step = item._cfg.model.step
         deleteConfirm().then(() => {
             VM.deleteChildStepById(step.id, VM.template.rootStep)

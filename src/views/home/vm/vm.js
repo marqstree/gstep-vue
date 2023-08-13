@@ -32,6 +32,7 @@ export default class VM {
         "id": VM.END_STEP_ID,
         "title": "结束",
         "category": "end",
+        "candidates":[],
         "form": {},
         "branchSteps": [],
         "nextStep": {}
@@ -69,6 +70,7 @@ export default class VM {
             "id": branchStepId,
             "title": "" + branchStepId,
             "category": "branch",
+            "candidates":[],
             "form": {},
             "branchSteps": [],
             "nextStep": branchNextStep
@@ -80,6 +82,7 @@ export default class VM {
             "id": branchStepId + 1,
             "title": "条件1",
             "category": "condition",
+            "candidates":[],
             "form": {},
             "branchSteps": [],
             "nextStep": {}
@@ -92,6 +95,7 @@ export default class VM {
             "id": branchStepId + 2,
             "title": '默认条件',
             "category": "condition",
+            "candidates":[],
             "form": {},
             "branchSteps": [],
             "nextStep": oldNextStep
@@ -105,6 +109,7 @@ export default class VM {
             "id": VM.newStepId(),
             "title": "审核",
             "category": "audit",
+            "candidates":[],
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -118,6 +123,7 @@ export default class VM {
             "id": VM.newStepId(),
             "title": "抄送",
             "category": "notify",
+            "candidates":[],
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -133,6 +139,7 @@ export default class VM {
             "id": VM.newStepId(),
             "title": title,
             "category": "condition",
+            "candidates":[],
             "form": {},
             "branchSteps": [],
             "nextStep": {}
@@ -218,13 +225,7 @@ export default class VM {
                 "title": "申请",
                 "category": "start",
                 "form": {},
-                "candidates": [{
-                    "id": "013645",
-                    "name": "王凡"
-                }, {
-                    "id": "013645",
-                    "name": "王凡"
-                }],
+                "candidates": [],
                 "branchSteps": [],
                 "nextStep": VM.END_STEP
             }
@@ -376,13 +377,14 @@ export default class VM {
         if (!step)
             return
 
+        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkk')
         // 候选人文案
         if (step.category == 'start'
             || step.category == 'audit'
             || step.category == 'notify') {
             let txt = ''
-            if(step.candidates && step.candidates.length>0)
-                txt = step.candidates.map(e => e.name).join(',')
+            if (step.candidates && step.candidates.length > 0)
+                txt = step.candidates.map(e => e.title).join(',')
             if (!txt.trim()) {
                 if (step.category == 'start')
                     txt = '请选择申请人'
@@ -394,9 +396,13 @@ export default class VM {
             // 文案最宽90px,字号14px
             step.detailText = fittingString(txt, 120, 14)
         }
-        else if(step.category == 'condition'){
+        else if (step.category == 'condition') {
+            if(step.title=='默认条件'){
+                step.detailText = '未满足其他条件分支'
+                return
+            }
             step.detailText = step.expression ? step.expression.trim() : ''
-            if(!step.detailText)
+            if (!step.detailText)
                 step.detailText = '请选择条件'
         }
 
@@ -436,6 +442,37 @@ export default class VM {
             nextMaxId = Math.max(nextMaxId, VM.getMaxStepId(rootStep.nextStep))
         }
         return nextMaxId
+    }
+
+    //查找步骤
+    static findStep(stepId, startStep) {
+        if (startStep == null || startStep.id<1 || stepId<1)
+            return null
+
+        if(startStep.id == stepId)
+            return startStep
+
+        if (startStep.nextStep.id == stepId)
+            return startStep.nextStep
+
+        for (var i = 0; i < startStep.branchSteps.length; i++) {
+            if (startStep.branchSteps[i].id == stepId)
+                return startStep.branchSteps[i]
+        }
+
+        for (var i = 0; i < startStep.branchSteps.length; i++) {
+            let step = VM.findStep(stepId, startStep.branchSteps[i])
+            if (null != step)
+                return step
+        }
+
+        if (startStep.nextStep.id) {
+            let step = VM.findStep(stepId, startStep.nextStep)
+            if (null != step)
+                return step
+        }
+
+        return null
     }
 
     //查找父步骤
@@ -516,5 +553,16 @@ export default class VM {
         }
 
         return 0
+    }
+
+    static async save2db(){
+        let params = VM.template
+        let res = await ApiUtil.template_save(params)
+    
+        params = {
+            templateId: res.data
+        }
+        let result = await ApiUtil.template_detail(params)
+        VM.template = result.data
     }
 }
