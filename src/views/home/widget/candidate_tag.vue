@@ -13,8 +13,7 @@ import VM from '../vm/vm'
 import ApiUtil from '@/api/api'
 
 const props = defineProps({
-    candidate:Object,
-    index:Number
+    candidate:Object
 })
 
 onMounted(() => {
@@ -22,7 +21,7 @@ onMounted(() => {
 })
 
 const onDelete = () => {
-    emit('delete', props.index)
+    emit('delete',props.candidate)
 }
 
 const emit = defineEmits(['delete'])

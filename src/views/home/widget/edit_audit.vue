@@ -8,12 +8,21 @@
             <div class="title">可提交审核的候选人/部门</div>
             <div class="tags">
                 <CandidateTag class="candidate" v-for="(item, i) in selectStepLocal.candidates" :key="i" :candidate="item"
-                    @delete="onDeleteCandidate" />
+                    @deleteCandidate="onDeleteCandidate" />
                 <div class="edit" @click="onShowPicker">修改</div>
             </div>
         </div>
 
-        <CandidatePicker v-if="isShowPicker" v-model:isShowPicker="isShowPicker" v-model:candidates="selectStepLocal.candidates" />
+        <div class="field-box">
+            <div class="title">多人审批方式</div>
+            <el-select v-model="selectStepLocal.auditMethod" placeholder="Select">
+                <el-option v-for="item in auditMethods" :key="item.value" :label="item.label" :value="item.value"
+                    :disabled="item.disabled" />
+            </el-select>
+        </div>
+
+        <CandidatePicker v-if="isShowPicker" v-model:isShowPicker="isShowPicker"
+            v-model:candidates="selectStepLocal.candidates" />
 
         <div class="btn-row">
             <el-button @click="onCancel">取消</el-button>
@@ -36,6 +45,7 @@ const props = defineProps({
 
 const selectStepLocal = ref({})
 const isShowPicker = ref(false)
+const auditMethods = [{ label: '或签', value: 'or' }, { label: '会签', value: 'and' }]
 
 onMounted(() => {
 
@@ -56,6 +66,7 @@ const onConfirm = () => {
     let findStep = VM.findStep(props.selectStep.id, VM.template.rootStep)
     findStep.title = selectStepLocal.value.title
     findStep.candidates = selectStepLocal.value.candidates
+    findStep.auditMethod = selectStepLocal.value.auditMethod
     emit('update:isRefreshChart', true)
     close()
 }
@@ -68,8 +79,9 @@ const onShowPicker = () => {
     isShowPicker.value = true
 }
 
-const onDeleteCandidate = (idx) => {
-    selectStepLocal.value.candidates = selectStepLocal.value.candidates.slice(idx, 1)
+const onDeleteCandidate = (candidate) => {
+    let idx=selectStepLocal.value.candidates.indexOf(e=>e.id==candidate.id)
+    selectStepLocal.value.candidates.splice(idx, 1)
 }
 
 const emit = defineEmits(['close', 'update:isRefreshChart'])

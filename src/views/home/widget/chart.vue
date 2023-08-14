@@ -19,7 +19,7 @@ onMounted(async () => {
     else
         VM.newTemplate()
 
-    VM.step2chartData(VM.template.rootStep, null)
+    VM.refreshChartData()
     setupChart()
 })
 

@@ -143,7 +143,6 @@ const onLoadChildren = async (node, resolve) => {
     unionNodes = unionNodes.concat(userNodes)
 
     selectNodeIds.value = unionNodes.filter(e=> e.isSelected).map(item=>item.id)
-    console.log('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     console.log(selectNodeIds.value)
 
     resolve(unionNodes)

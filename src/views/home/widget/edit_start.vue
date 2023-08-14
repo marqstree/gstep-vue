@@ -68,8 +68,9 @@ const onShowPicker = () => {
     isShowPicker.value = true
 }
 
-const onDeleteCandidate = (idx) => {
-    selectStepLocal.value.candidates = selectStepLocal.value.candidates.slice(idx, 1)
+const onDeleteCandidate = (candidate) => {
+    let idx=selectStepLocal.value.candidates.indexOf(e=>e.id==candidate.id)
+    selectStepLocal.value.candidates.splice(idx, 1)
 }
 
 const emit = defineEmits(['close', 'update:isRefreshChart'])

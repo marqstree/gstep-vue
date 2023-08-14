@@ -21,10 +21,13 @@ export default class VM {
     static FONT_HOVER_COLOR = "#999999"
     static END_STEP_ID = 9999
 
-    static chartData = {}
+    static chartData = {
+        nodes: [],
+        edges: []
+    }
     static template = {
-        id: 0,
-        groupId: 0,
+        id: 1,
+        groupId: 1,
         title: ""
     }
 
@@ -43,7 +46,8 @@ export default class VM {
         const params = {
             groupId: VM.template.groupId
         }
-        template = await ApiUtil.template_detail(params)
+        let res = await ApiUtil.template_detail(params)
+        VM.template = res.data
     }
 
     // 添加分支步骤
@@ -110,6 +114,7 @@ export default class VM {
             "title": "审核",
             "category": "audit",
             "candidates":[],
+            "auditMethod":'or',
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -377,7 +382,6 @@ export default class VM {
         if (!step)
             return
 
-        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkk')
         // 候选人文案
         if (step.category == 'start'
             || step.category == 'audit'
@@ -399,7 +403,6 @@ export default class VM {
         else if (step.category == 'condition') {
             if(step.title=='默认条件'){
                 step.detailText = '未满足其他条件分支'
-                return
             }
             step.detailText = step.expression ? step.expression.trim() : ''
             if (!step.detailText)
