@@ -1,15 +1,9 @@
 import axios from "axios"
-import { getToken, TOKEN_KEY } from "./auth_util"
 import { warnToast } from "@/util/toast_util.js"
-import router from '@/router/index.js'
-
-const TokenKey = TOKEN_KEY
-import store from '../store'
-import { NEED_LOGIN_CODES } from './errer_code.js'
+import ApiUtil from "@/api/api"
 
 // create an axios instance
 const service = axios.create({
-    baseURL: process.env.APP_DOMAIN, // url = domain + request url
     withCredentials: true, // send cookies when cross-domain requests
     timeout: 60000, // request timeout
 })
@@ -17,13 +11,9 @@ const service = axios.create({
 //请求拦截器
 service.interceptors.request.use(
     config => {
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        //请求头加token
-        let token = getToken()
-        if (token) {
-            config.headers[TokenKey] = token
+        if (config.method.toLowerCase() == "post") {
+            config.data = JSON.stringify(config.data)
         }
-
         return config
     },
     error => {
@@ -42,17 +32,6 @@ service.interceptors.response.use(
 
         if (res.code !== 200) {
             warnToast(res.msg || "Error")
-
-            console.log(NEED_LOGIN_CODES)
-
-            if (NEED_LOGIN_CODES.indexOf(res.code + '') >= 0) {
-                warnToast('请登录')
-                setTimeout(() => {
-                    store.commit('logout')
-                    router.push('/login')
-                    return
-                }, 1500)
-            }
 
             return Promise.reject(res.msg || "Error")
         }

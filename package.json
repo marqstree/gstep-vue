@@ -1,7 +1,6 @@
 {
-  "name": "vue-project",
-  "version": "0.0.0",
-  "private": true,
+  "name": "gstep-ui",
+  "version": "1.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -22,5 +21,10 @@
     "sass": "^1.64.2",
     "sass-loader": "^13.3.2",
     "vite": "^4.4.6"
-  }
+  },
+  "description": "基于vue3的仿企业微信工作流设计器组件库",
+  "main": "main.js",
+  "keywords": ["workflow","gstep","vue","vue3"],
+  "author": "",
+  "license": "ISC"
 }

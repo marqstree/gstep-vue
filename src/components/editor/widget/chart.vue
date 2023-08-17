@@ -4,38 +4,40 @@
   
 <script setup>
 import G6 from '@antv/g6'
-import { onMounted, ref, watch, defineProps, defineEmits } from 'vue'
+import { onMounted, ref, watch, defineProps, defineEmits, defineExpose } from 'vue'
 import VM from '../vm/vm'
 import { deleteConfirm } from '@/util/message_util'
-
-
-const emit = defineEmits(['update:isShowDrawer', 'update:isRefreshChart'])
-
-let graph = null
-
-onMounted(async () => {
-    if (VM.template.groupId)
-        await VM.getData()
-    else
-        VM.newTemplate()
-
-    VM.refreshChartData()
-    setupChart()
-})
 
 const props = defineProps({
     isRefreshChart: Boolean,
     selectStep: Object
+})
+const emit = defineEmits(['update:isShowDrawer', 'update:isRefreshChart'])
+
+
+
+let graph = null
+
+onMounted(() => {
+    setupChart()
 })
 
 watch(props, () => {
     if (props.isRefreshChart) {
         refreshChart()
         emit('update:isRefreshChart', false)
+        return
     }
 }, {
     immediate: true
 })
+
+const getTemplate = async() => {
+    if (VM.template.groupId)
+        await VM.getData()
+    else
+        VM.newTemplate()
+}
 
 const refreshChart = () => {
     console.log('+++ 刷新流程图 ++++++++++++++')
@@ -44,6 +46,8 @@ const refreshChart = () => {
     graph.data(VM.chartData) // 读取 Step 2 中的数据源到图上
     graph.render() // 渲染图
 }
+
+defineExpose({getTemplate,refreshChart})
 
 // 定义流程图
 const setupChart = () => {
@@ -86,11 +90,15 @@ const setupChart = () => {
                 })
 
                 // title text
+                let titleText = cfg.step.title
+                if (process.env.APP_IS_DEBUG) {
+                    titleText = cfg.step.title + ':' + cfg.step.id
+                }
                 group.addShape('text', {
                     attrs: {
                         y: -VM.nodeH / 2 + 11,
                         x: 0,
-                        text: cfg.step.title,
+                        text: titleText,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -180,11 +188,15 @@ const setupChart = () => {
                 })
 
                 // title text
+                let titleText = "添加条件"
+                if (process.env.APP_IS_DEBUG) {
+                    titleText = "添加条件" + ":" + cfg.step.id
+                }
                 group.addShape('text', {
                     attrs: {
                         x: 0,
                         y: 0,
-                        text: "添加条件",
+                        text: titleText,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -226,11 +238,15 @@ const setupChart = () => {
                 })
 
                 // title text
+                let titleText = "结束"
+                if (process.env.APP_IS_DEBUG) {
+                    titleText = titleText + ':' + cfg.step.id
+                }
                 group.addShape('text', {
                     attrs: {
                         x: 0,
                         y: 1.5,
-                        text: "结束",
+                        text: titleText,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -284,13 +300,17 @@ const setupChart = () => {
                 })
 
                 // title text
+                let titleText = cfg.step.title
+                if (process.env.APP_IS_DEBUG) {
+                    titleText = titleText + ':' + cfg.step.id
+                }
                 group.addShape('text', {
                     attrs: {
                         textBaseline: 'middle',
                         textAlign: 'center',
                         y: -VM.nodeH / 2 + 11,
                         x: 0,
-                        text: cfg.step.title,
+                        text: titleText,
                         fill: '#fff',
                         fontSize: 14,
                         fontWeight: 'bold',
@@ -374,11 +394,15 @@ const setupChart = () => {
                 })
 
                 // title text
+                let titleText = cfg.step.title
+                if (process.env.APP_IS_DEBUG) {
+                    titleText = titleText + ':' + cfg.step.id
+                }
                 group.addShape('text', {
                     attrs: {
                         y: -VM.nodeH / 2 + 11,
                         x: 0,
-                        text: cfg.step.title,
+                        text: titleText,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -461,11 +485,15 @@ const setupChart = () => {
                 })
 
                 // title text
+                let titleText = cfg.step.title
+                if (process.env.APP_IS_DEBUG) {
+                    titleText = titleText + ':' + cfg.step.id
+                }
                 group.addShape('text', {
                     attrs: {
                         y: -VM.nodeH / 2 + 11,
                         x: 0,
-                        text: cfg.step.title,
+                        text: titleText,
                         fill: '#fff',
                         fontSize: 14,
                         textAlign: 'center',
@@ -580,7 +608,7 @@ const setupChart = () => {
             type: 'dagre',
             rankdir: 'TB',
             ranksep: 15,
-            nodesep: 30,
+            nodesep: 35,
             controlPoints: true
         },
         defaultNode: {
@@ -590,15 +618,14 @@ const setupChart = () => {
         },
         defaultEdge: {
             type: 'polyline',
-            /* configure the bending radius and min distance to the end nodes */
             style: {
                 radius: 10,
-                offset: 30,
-                style: {
-                    endArrow: {
-                        path: G6.Arrow.triangle(),
-                    },
-                }
+                offset: 0,
+                // style: {
+                //     endArrow: {
+                //         path: 'M 0,0 L 8,4 L 8,-4 Z',
+                //     },
+                // }
             },
         },
         fitCenter: true
@@ -614,7 +641,7 @@ const setupChart = () => {
         if (item._cfg.currentShape == 'start'
             || item._cfg.currentShape == 'audit'
             || item._cfg.currentShape == 'notify'
-            || (item._cfg.currentShape == 'condition' && item._cfg.model.step.title!='默认条件')) {
+            || (item._cfg.currentShape == 'condition' && item._cfg.model.step.title != '默认条件')) {
             emit('update:selectStep', item._cfg.model.step)
             emit('update:isShowDrawer', true)
         } else if (item._cfg.currentShape == 'branch') {

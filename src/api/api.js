@@ -1,11 +1,12 @@
-import request from "@/util/request"
 import request_json from "@/util/request_json"
-import request_upload from '@/util/request_upload.js'
+
 
 class ApiUtil {
+    static baseUrl = ""
+
     static template_detail(data) {
         return request_json({
-            url: "/template/detail",
+            url: ApiUtil.baseUrl + "/template/detail",
             method: "POST",
             data
         })
@@ -13,7 +14,7 @@ class ApiUtil {
 
     static template_save(data) {
         return request_json({
-            url: "/template/save",
+            url: ApiUtil.baseUrl + "/template/save",
             method: "POST",
             data
         })
@@ -21,7 +22,7 @@ class ApiUtil {
 
     static department_get_child_department(data) {
         return request_json({
-            url: "/department/get_child_department",
+            url: ApiUtil.baseUrl + "/department/get_child_department",
             method: "POST",
             data
         })
@@ -29,7 +30,7 @@ class ApiUtil {
 
     static department_get_users(data) {
         return request_json({
-            url: "/department/get_users",
+            url: ApiUtil.baseUrl + "/department/get_users",
             method: "POST",
             data
         })

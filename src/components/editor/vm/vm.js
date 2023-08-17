@@ -3,7 +3,7 @@ import ApiUtil from '@/api/api'
 import { fittingString } from '@/util/str_util'
 
 export default class VM {
-    static nodeW = 120
+    static nodeW = 130
     static nodeH = 50
     static spaceH = 30
     static addR = 10
@@ -26,8 +26,8 @@ export default class VM {
         edges: []
     }
     static template = {
-        id: 1,
-        groupId: 1,
+        id: 0,
+        groupId: 0,
         title: ""
     }
 
@@ -35,7 +35,7 @@ export default class VM {
         "id": VM.END_STEP_ID,
         "title": "结束",
         "category": "end",
-        "candidates":[],
+        "candidates": [],
         "form": {},
         "branchSteps": [],
         "nextStep": {}
@@ -74,7 +74,7 @@ export default class VM {
             "id": branchStepId,
             "title": "" + branchStepId,
             "category": "branch",
-            "candidates":[],
+            "candidates": [],
             "form": {},
             "branchSteps": [],
             "nextStep": branchNextStep
@@ -86,7 +86,7 @@ export default class VM {
             "id": branchStepId + 1,
             "title": "条件1",
             "category": "condition",
-            "candidates":[],
+            "candidates": [],
             "form": {},
             "branchSteps": [],
             "nextStep": {}
@@ -99,7 +99,7 @@ export default class VM {
             "id": branchStepId + 2,
             "title": '默认条件',
             "category": "condition",
-            "candidates":[],
+            "candidates": [],
             "form": {},
             "branchSteps": [],
             "nextStep": oldNextStep
@@ -113,8 +113,8 @@ export default class VM {
             "id": VM.newStepId(),
             "title": "审核",
             "category": "audit",
-            "candidates":[],
-            "auditMethod":'or',
+            "candidates": [],
+            "auditMethod": 'or',
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -128,7 +128,7 @@ export default class VM {
             "id": VM.newStepId(),
             "title": "抄送",
             "category": "notify",
-            "candidates":[],
+            "candidates": [],
             "form": {},
             "branchSteps": [],
             "nextStep": parentStep.nextStep
@@ -144,7 +144,7 @@ export default class VM {
             "id": VM.newStepId(),
             "title": title,
             "category": "condition",
-            "candidates":[],
+            "candidates": [],
             "form": {},
             "branchSteps": [],
             "nextStep": {}
@@ -314,8 +314,7 @@ export default class VM {
                 label: '', // 边的文本
                 style: {
                     endArrow: {
-                        path: G6.Arrow.triangle(),
-                        stroke: "#C2C8D5",
+                        path: 'M 0,0 L 8,4 L 8,-4 Z',
                         fill: "#C2C8D5"
                     },
                 }
@@ -397,16 +396,18 @@ export default class VM {
                 else if (step.category == 'notify')
                     txt = '请选择抄送人'
             }
-            // 文案最宽90px,字号14px
-            step.detailText = fittingString(txt, 120, 14)
+            // 文案最宽120px,字号12px
+            step.detailText = fittingString(txt, 120, 12)
         }
         else if (step.category == 'condition') {
-            if(step.title=='默认条件'){
-                step.detailText = '未满足其他条件分支'
+            if (step.title == '默认条件') {
+                step.detailText = '未满足其他条件'
+            } else {
+                step.detailText = step.expression ? step.expression.trim() : ''
+                if (!step.detailText)
+                    step.detailText = '请选择条件'
             }
-            step.detailText = step.expression ? step.expression.trim() : ''
-            if (!step.detailText)
-                step.detailText = '请选择条件'
+            step.detailText = fittingString(step.detailText, 120, 12)
         }
 
         if (step.nextStep.id)
@@ -449,10 +450,10 @@ export default class VM {
 
     //查找步骤
     static findStep(stepId, startStep) {
-        if (startStep == null || startStep.id<1 || stepId<1)
+        if (startStep == null || startStep.id < 1 || stepId < 1)
             return null
 
-        if(startStep.id == stepId)
+        if (startStep.id == stepId)
             return startStep
 
         if (startStep.nextStep.id == stepId)
@@ -558,10 +559,10 @@ export default class VM {
         return 0
     }
 
-    static async save2db(){
+    static async save2db() {
         let params = VM.template
         let res = await ApiUtil.template_save(params)
-    
+
         params = {
             templateId: res.data
         }
