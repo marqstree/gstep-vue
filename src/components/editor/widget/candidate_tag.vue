@@ -1,5 +1,5 @@
 <template>
-    <span class="candidate-tag">
+    <span class="candidate-tag-widget">
         <img class="icon" src="@/assets/home.png" v-if="candidate.category == 'department'" />
         <img class="icon" src="@/assets/person.png" v-if="candidate.category == 'user'" />
         <span class="title">{{ candidate.title }}</span>
@@ -29,7 +29,7 @@ const emit = defineEmits(['delete'])
 </script>
   
 <style lang="scss" scoped>
-.candidate-tag {
+.candidate-tag-widget{
     display: flex;
     align-items: center;
     border: 1px solid #999;

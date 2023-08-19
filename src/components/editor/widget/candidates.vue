@@ -1,5 +1,5 @@
 <template>
-    <div class="widget">
+    <div class="candidates-widget">
         <div class="title">可提交的成员</div>
         <div class="candidate" v-for="(item,i) in selectStep.candidates" :key="i">
             <div class="title">item.title</div>
@@ -53,7 +53,7 @@ const emit = defineEmits(['close', 'update:isRefreshChart'])
 </script>
   
 <style lang="scss" scoped>
-.widget {
+.candidates-widget {
     height: 100%;
     display: flex;
     flex-direction: column;

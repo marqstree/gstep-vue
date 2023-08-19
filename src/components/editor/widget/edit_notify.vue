@@ -1,5 +1,5 @@
 <template>
-    <div class="widget">
+    <div class="edit-notify-widget">
         <div class="field-box">
             <div class="title">标题</div>
             <el-input v-model="selectStep.title" />
@@ -28,6 +28,7 @@ import VM from '../vm/vm'
 import CandidatePicker from './candidate_picker.vue'
 import CandidateTag from './candidate_tag.vue'
 import ApiUtil from '@/api/api'
+import {ElButton,ElInput} from 'element-plus'
 
 const props = defineProps({
     selectStep: Object,
@@ -77,8 +78,7 @@ const emit = defineEmits(['close', 'update:isRefreshChart'])
 </script>
   
 <style scoped>
-.widget {
-    height: 100%;
+.edit-notify-widget {
     display: flex;
     flex-direction: column;
 

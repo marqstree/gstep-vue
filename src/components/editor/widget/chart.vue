@@ -1,5 +1,5 @@
 <template>
-    <div id="mountNode"></div>
+    <div id="chartMountId"></div>
 </template>
   
 <script setup>
@@ -13,8 +13,6 @@ const props = defineProps({
     selectStep: Object
 })
 const emit = defineEmits(['update:isShowDrawer', 'update:isRefreshChart'])
-
-
 
 let graph = null
 
@@ -51,7 +49,7 @@ defineExpose({getTemplate,refreshChart})
 
 // 定义流程图
 const setupChart = () => {
-    const container = document.getElementById('mountNode')
+    const container = document.getElementById('chartMountId')
 
     const scrollWidth = container.scrollWidth
     const scrollHeight = container.scrollHeight
@@ -599,7 +597,7 @@ const setupChart = () => {
             default: ['drag-canvas', 'zoom-canvas'], // 允许拖拽画布、放缩画布、拖拽节点
             nodeActive: ['hover', 'clickSelect']
         },
-        container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
+        container: 'chartMountId', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
         plugins: [menu], // 配置 Menu 插件
         fitView: false, // 是否将图适配到画布大小，可以防止超出画布或留白太多。
         width: scrollWidth, // Number，必须，图的宽度
@@ -695,7 +693,7 @@ const setupChart = () => {
 </script>
   
 <style scoped>
-#mountNode {
+#chartMountId {
     width: 100%;
     height: 100%;
     position: relative;

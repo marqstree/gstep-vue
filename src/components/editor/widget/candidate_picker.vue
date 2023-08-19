@@ -1,12 +1,12 @@
 <template>
-    <el-dialog v-model="isShowPickerLocal" title="可见范围">
+    <Dialog v-model:isShowDialog="isShowPickerLocal" title="可见范围" class="candidate-dialog-wrapper">
         <div class="cat-row">
             <div class="cat" v-for="(item, i) in cats" :class="{ active: i == catSelectIndex }" :key="i"
                 @click="onSelectCat(i)">
                 {{ item.title }}
             </div>
         </div>
-        <div class="">
+        <div class="tree-wrapper">
             <el-tree :props="treeNode" :load="onLoadChildren" lazy show-checkbox check-strictly="true" node-key="id"
                 :default-checked-keys="selectNodeIds" @check-change="onSelectNode">
                 <template #default="{ node, data }">
@@ -17,6 +17,8 @@
                     </span>
                 </template>
             </el-tree>
+
+            <!-- <TreeNode /> -->
         </div>
         <template #footer>
             <span class="dialog-footer">
@@ -26,13 +28,16 @@
                 </el-button>
             </span>
         </template>
-    </el-dialog>
+    </Dialog>
 </template>
 
 <script setup>
 import { onMounted, ref, defineEmits, defineProps, watch } from 'vue'
+import { ElTree, ElButton } from 'element-plus'
 import VM from '../vm/vm'
 import ApiUtil from '@/api/api'
+import Dialog from './dialog.vue'
+import TreeNode from './tree_node.vue'
 
 const props = defineProps({
     isShowPicker: Boolean,
@@ -142,7 +147,7 @@ const onLoadChildren = async (node, resolve) => {
     let unionNodes = departmentNodes
     unionNodes = unionNodes.concat(userNodes)
 
-    selectNodeIds.value = unionNodes.filter(e=> e.isSelected).map(item=>item.id)
+    selectNodeIds.value = unionNodes.filter(e => e.isSelected).map(item => item.id)
     console.log(selectNodeIds.value)
 
     resolve(unionNodes)
@@ -162,36 +167,41 @@ const emit = defineEmits(['update:isShowPicker', 'update:candidates'])
 </script>
   
 <style lang="scss" scoped>
-.cat-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+.candidate-dialog-wrapper {
+    .cat-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
 
-    .cat {
-        cursor: pointer;
-        color: #999;
-        border-bottom: 1px solid #fff;
-        padding: 0 10px 5px 10px;
+        .cat {
+            cursor: pointer;
+            color: #999;
+            border-bottom: 1px solid #fff;
+            padding: 0 10px 5px 10px;
 
-        &.active {
-            color: #0C4C7F;
-            border-bottom: 1px solid #0C4C7F;
+            &.active {
+                color: #0C4C7F;
+                border-bottom: 1px solid #0C4C7F;
+            }
         }
     }
-}
 
-.custom-tree-node {
-    display: flex;
-    align-items: center;
-
-    .icon {
-        width: 15px;
-        height: 15px;
-    }
-
-    .title {
-        margin-left: 5px;
-        font-size: 12px;
+    .tree-wrapper {
+        margin-top: 10px;
+        .custom-tree-node {
+            display: flex;
+            align-items: center;
+    
+            .icon {
+                width: 15px;
+                height: 15px;
+            }
+    
+            .title {
+                margin-left: 5px;
+                font-size: 12px;
+            }
+        }
     }
 }
 </style>

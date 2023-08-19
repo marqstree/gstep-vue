@@ -1,11 +1,11 @@
 <template>
-  <div class="editor-wrapper">
+  <div class="gstep-editor-wrapper">
     <div class="chart-wrapper">
-      <Toolbar v-model:isRefreshChart="isRefreshChart" />
+      <Toolbar v-model:isRefreshChart="isRefreshChart" @cancel="onCancel" @save="onSave" />
       <Chart class="chart" ref="chart" v-model:isShowDrawer="isShowDrawer" v-model:isRefreshChart="isRefreshChart"
         v-model:selectStep="selectStep" />
     </div>
-    <el-drawer v-model="isShowDrawer" title="编辑" direction="rtl" size="450">
+    <Drawer v-model:isShowDrawer="isShowDrawer">
       <EditStart v-if="selectStep.category == 'start'" v-model:selectStep="selectStep" @close="onCloseDrawer"
         v-model:isRefreshChart="isRefreshChart" />
       <EditAudit v-if="selectStep.category == 'audit'" v-model:selectStep="selectStep" @close="onCloseDrawer"
@@ -14,18 +14,19 @@
         v-model:isRefreshChart="isRefreshChart" />
       <EditCondition v-if="selectStep.category == 'condition'" v-model:selectStep="selectStep" @close="onCloseDrawer"
         v-model:isRefreshChart="isRefreshChart" />
-    </el-drawer>
+    </Drawer>
   </div>
 </template>
 
 <script setup>
-import { onBeforeMount, onMounted, ref, defineProps, watch } from 'vue'
+import { onBeforeMount, onMounted, ref, defineProps, watch, defineEmits } from 'vue'
 import EditStart from './widget/edit_start.vue'
 import EditAudit from './widget/edit_audit.vue'
 import EditNotify from './widget/edit_notify.vue'
 import EditCondition from './widget/edit_condition.vue'
 import Chart from './widget/chart.vue'
 import Toolbar from './widget/toolbar.vue'
+import Drawer from './widget/drawer.vue'
 import ApiUtil from '@/api/api'
 import VM from './vm/vm'
 
@@ -46,28 +47,45 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
-
+  refreshDataAndChart()
 })
 
-watch(props, async () => {
-  VM.template = props.template
-
-  if (chart.value) {
-    await chart.value.getTemplate()
-    chart.value.refreshChart()
+watch(props, (newValue, oldValue) => {
+  console.log('xxxxxxxxxxxxxxxxxx')
+  if (chart.value
+    && newValue.template
+    && oldValue.template
+    && oldValue.template.id != newValue.template.id) {
+    refreshDataAndChart()
   }
 }, {
   immediate: true
 })
 
+const refreshDataAndChart = async () => {
+  VM.template = props.template
+  await chart.value.getTemplate()
+  chart.value.refreshChart()
+}
+
+const onCancel = () => {
+  emit('cancel')
+}
+
+const onSave = () => {
+  emit('save')
+}
+
 const onCloseDrawer = () => {
   isShowDrawer.value = false
 }
 
+const emit = defineEmits(['cancel', 'save'])
+
 </script>
 
 <style lang="scss" scoped>
-.editor-wrapper {
+.gstep-editor-wrapper {
   .chart-wrapper {
     width: 100%;
     height: 100%;

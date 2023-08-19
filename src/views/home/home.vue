@@ -1,6 +1,10 @@
 <template>
   <div class="page">
-    <Editor class="editor" baseUrl="http://localhost:9900" :template="template" />
+    <Editor class="editor" 
+      baseUrl="http://localhost:9900" 
+      :template="template"
+      @cancel="onCancel"
+      @save="onSave" />
   </div>
 </template>
 
@@ -12,9 +16,17 @@ const template = ref({})
 onMounted(() => {
   template.value = {
     id: 0,
-    groupId: 1
+    groupId: 0
   }
 })
+
+const onCancel=()=>{
+  console.log('cancel')
+}
+
+const onSave=()=>{
+  console.log('save')
+}
 
 </script>
 

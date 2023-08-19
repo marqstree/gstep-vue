@@ -1,10 +1,25 @@
 {
-  "name": "gstep-ui",
-  "version": "1.0.0",
+  "name": "gstep-vue",
+  "private": false,
+  "version": "1.0.6",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "files": [
+    "dist",
+    "dist/**"
+  ],
+  "main": "./dist/gstep-vue.umd.js",
+  "module": "./dist/gstep-vue.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/gstep-vue.es.js",
+      "require": "./dist/gstep-vue.umd.js"
+    },
+    "./dist/style.css": "./dist/style.css"
   },
   "dependencies": {
     "@antv/g6": "^4.8.20",
@@ -20,11 +35,9 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "sass": "^1.64.2",
     "sass-loader": "^13.3.2",
+    "unplugin-auto-import": "^0.16.6",
+    "unplugin-element-plus": "^0.8.0",
+    "unplugin-vue-components": "^0.25.1",
     "vite": "^4.4.6"
-  },
-  "description": "基于vue3的仿企业微信工作流设计器组件库",
-  "main": "main.js",
-  "keywords": ["workflow","gstep","vue","vue3"],
-  "author": "",
-  "license": "ISC"
+  }
 }

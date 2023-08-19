@@ -1,0 +1,12 @@
+{
+  "name": "gstep-vue",
+  "version": "1.0.0",
+  "description": "gstep vue3 workflow chart editor",
+  "main": "gstep-vue.es.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["workflow","vue","vue3","gstep"],
+  "author": "",
+  "license": "ISC"
+}
