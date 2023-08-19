@@ -19,14 +19,7 @@ const onCancel = () => {
 }
 
 const onConfirm = async () => {
-    let params = VM.template
-    let res = await ApiUtil.template_save(params)
-
-    params = {
-        templateId: res.data
-    }
-    let result = await ApiUtil.template_detail(params)
-    VM.template = result.data
+    VM.save2db()
 
     emit('update:isRefreshChart',true)
     emit('save')

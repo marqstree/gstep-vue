@@ -15,8 +15,8 @@ const template = ref({})
 
 onMounted(() => {
   template.value = {
-    id: 0,
-    groupId: 0
+    id: null,
+    groupId: 1
   }
 })
 

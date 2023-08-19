@@ -51,7 +51,6 @@ onMounted(() => {
 })
 
 watch(props, (newValue, oldValue) => {
-  console.log('xxxxxxxxxxxxxxxxxx')
   if (chart.value
     && newValue.template
     && oldValue.template

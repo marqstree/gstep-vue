@@ -560,6 +560,7 @@ export default class VM {
     }
 
     static async save2db() {
+        console.log('cccccccccccccccccccc')
         let params = VM.template
         let res = await ApiUtil.template_save(params)
 
