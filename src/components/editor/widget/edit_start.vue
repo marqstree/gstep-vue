@@ -44,6 +44,7 @@ onMounted(() => {
 
 watch(props, () => {
     selectStepLocal.value = JSON.parse(JSON.stringify(props.selectStep))
+    console.log('zzzzzzzzzzzzzzzzzzzzzzzzzzz')
     console.log(selectStepLocal)
 }, {
     immediate: true

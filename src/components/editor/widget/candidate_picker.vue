@@ -1,5 +1,7 @@
 <template>
-    <Dialog v-model:isShowDialog="isShowPickerLocal" title="可见范围" class="candidate-dialog-wrapper">
+    <el-dialog v-model="isShowPickerLocal" title="可见范围" width="30%" :before-close="onCancel"
+        class="candidate-dialog-wrapper">
+
         <div class="cat-row">
             <div class="cat" v-for="(item, i) in cats" :class="{ active: i == catSelectIndex }" :key="i"
                 @click="onSelectCat(i)">
@@ -28,12 +30,12 @@
                 </el-button>
             </span>
         </template>
-    </Dialog>
+    </el-dialog>
 </template>
 
 <script setup>
 import { onMounted, ref, defineEmits, defineProps, watch } from 'vue'
-import { ElTree, ElButton } from 'element-plus'
+import { ElDialog, ElTree, ElButton } from 'element-plus'
 import VM from '../vm/vm'
 import ApiUtil from '@/api/api'
 import Dialog from './dialog.vue'
@@ -157,7 +159,8 @@ const onCancel = () => {
     emit('update:isShowPicker', false)
 }
 
-const onConfirm = async () => {
+const onConfirm = () => {
+    console.log('333333333333333333333333333333333333333333')
     emit('update:candidates', candidatesLocal.value)
     emit('update:isShowPicker', false)
 }
@@ -188,15 +191,16 @@ const emit = defineEmits(['update:isShowPicker', 'update:candidates'])
 
     .tree-wrapper {
         margin-top: 10px;
+
         .custom-tree-node {
             display: flex;
             align-items: center;
-    
+
             .icon {
                 width: 15px;
                 height: 15px;
             }
-    
+
             .title {
                 margin-left: 5px;
                 font-size: 12px;

@@ -1,7 +1,7 @@
 {
   "name": "gstep-vue",
   "private": false,
-  "version": "1.0.6",
+  "version": "1.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
