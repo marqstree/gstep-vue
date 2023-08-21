@@ -31,7 +31,7 @@ watch(props, () => {
 })
 
 const getTemplate = async() => {
-    if (VM.template.groupId)
+    if (VM.template.id)
         await VM.getData()
     else
         VM.newTemplate()

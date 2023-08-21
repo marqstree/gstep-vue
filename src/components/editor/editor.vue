@@ -47,14 +47,14 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
-  refreshDataAndChart()
+
 })
 
 watch(props, (newValue, oldValue) => {
   if (chart.value
-    && newValue.template
-    && oldValue.template
-    && oldValue.template.id != newValue.template.id) {
+    && VM.template
+    && VM.template.id != newValue.template.id) {
+    VM.template = newValue.template
     refreshDataAndChart()
   }
 }, {
@@ -62,7 +62,6 @@ watch(props, (newValue, oldValue) => {
 })
 
 const refreshDataAndChart = async () => {
-  VM.template = props.template
   await chart.value.getTemplate()
   chart.value.refreshChart()
 }
@@ -72,6 +71,7 @@ const onCancel = () => {
 }
 
 const onSave = () => {
+  emit('update:template', VM.template)
   emit('save')
 }
 
@@ -79,7 +79,7 @@ const onCloseDrawer = () => {
   isShowDrawer.value = false
 }
 
-const emit = defineEmits(['cancel', 'save'])
+const emit = defineEmits(['cancel', 'save','update:template'])
 
 </script>
 

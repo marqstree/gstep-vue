@@ -2,7 +2,7 @@
   <div class="page">
     <Editor class="editor" 
       baseUrl="http://localhost:9900" 
-      :template="template"
+      v-model:template="template"
       @cancel="onCancel"
       @save="onSave" />
   </div>
@@ -15,8 +15,8 @@ const template = ref({})
 
 onMounted(() => {
   template.value = {
-    id: null,
-    groupId: 1
+    // id: 79
+    // templateId: 1
   }
 })
 
@@ -26,6 +26,8 @@ const onCancel=()=>{
 
 const onSave=()=>{
   console.log('save')
+  console.log('+++ saved template ++++++')
+  console.log(template.value)
 }
 
 </script>

@@ -19,7 +19,7 @@ const onCancel = () => {
 }
 
 const onConfirm = async () => {
-    VM.save2db()
+    await VM.save2db()
 
     emit('update:isRefreshChart',true)
     emit('save')

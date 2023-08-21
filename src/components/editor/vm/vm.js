@@ -27,7 +27,7 @@ export default class VM {
     }
     static template = {
         id: 0,
-        groupId: 0,
+        templateId: 0,
         title: ""
     }
 
@@ -44,7 +44,7 @@ export default class VM {
     // 查询入库流程图数据
     static async getData() {
         const params = {
-            groupId: VM.template.groupId
+            versionId: VM.template.id
         }
         let res = await ApiUtil.template_detail(params)
         VM.template = res.data
@@ -560,12 +560,11 @@ export default class VM {
     }
 
     static async save2db() {
-        console.log('cccccccccccccccccccc')
         let params = VM.template
         let res = await ApiUtil.template_save(params)
 
         params = {
-            templateId: res.data
+            versionId: res.data
         }
         let result = await ApiUtil.template_detail(params)
         VM.template = result.data

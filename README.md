@@ -1,2 +1,2 @@
 # gstep-vue
-gstep workflow web ui
+gstep workflow vue editor
